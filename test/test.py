@@ -8,9 +8,9 @@ varnames = pyte.create_validated()
 bc = [pyte.load.LOAD_CONST(consts[0]),
       pyte.tokens.RETURN_VALUE]
 
+# Compile the code.
 func = pyte.compile(bc, consts, varnames)
 
-print(func.__code__.co_code)
-
+# Call it.
 a = func()
 print(a)
