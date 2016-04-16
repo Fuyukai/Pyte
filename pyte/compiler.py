@@ -69,7 +69,7 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
                            "you don't need one.")
 
     # Set default flags
-    flags = 2 | 64
+    flags = 1 | 2 | 64
 
     # Compile the object.
     obb = types.CodeType(
