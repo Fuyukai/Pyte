@@ -7,7 +7,7 @@ from . import tokens
 from . import superclasses
 
 from .ops import load
-
+from .ops import call
 
 # Helper for creating new validated lists.
 def _create_validated(*args, name) -> superclasses.PyteAugmentedArgList:

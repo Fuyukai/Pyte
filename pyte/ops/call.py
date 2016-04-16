@@ -37,6 +37,15 @@ class CALL_FUNCTION(_PyteOp):
         # 3) Then, we generate the CALL_FUNCTION opcode, using the right params.
         arg_count = len(self.args)
         bc = b""
+        # Add the load_global call to load the function
+        if not isinstance(self.fun, _PyteAugmentedValidator):
+            raise ValidationError("Function to call must be inside names")
+        # Get the function index
+        self.fun.validate()
+        f_index = self.fun.index
+        # Generate a LOAD_GLOBAL call
+        l_g = util.generate_load_global(f_index)
+        bc += l_g
         # Iterate over.
         for arg in self.args:
             try:
@@ -54,19 +63,11 @@ class CALL_FUNCTION(_PyteOp):
                 bc += util.generate_load_fast(arg.index)
             else:
                 raise ValidationError("Could not determine call to use with list type {}".format(arg.list_name))
-        # Add the function in the function call.
-        if not isinstance(self.fun, _PyteAugmentedValidator):
-            raise ValidationError("Function to call must be inside names")
-        # Get the function index
-        self.fun.validate()
-        f_index = self.fun.index
-        # Generate a LOAD_GLOBAL call
-        l_g = util.generate_load_global(f_index)
-        bc += l_g
+
         # Generate the CALL_FUNCTION call.
-        bc += tokens.CALL_FUNCTION.to_bytes(1, byteorder="big")
+        bc += tokens.CALL_FUNCTION.to_bytes(1, byteorder="little")
         # Set the low byte.
-        bc += arg_count.to_bytes(1, byteorder="big")
+        bc += arg_count.to_bytes(1, byteorder="little")
         # Set the high byte.
         bc += b"\x00"
         return bc

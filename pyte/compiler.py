@@ -42,7 +42,7 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
         if isinstance(op, _PyteOp):
             bc_op = op.to_bytes()
         elif isinstance(op, int):
-            bc_op = op.to_bytes(1, byteorder="big")
+            bc_op = op.to_bytes(1, byteorder="little")
         elif isinstance(op, bytes):
             bc_op = op
         else:

@@ -26,7 +26,7 @@ class _LoadOPSuper(object):
             def to_bytes(self) -> bytes:
                 byte_string = b""
                 # Add the opcode
-                byte_string += opcode.to_bytes(1, byteorder="big")
+                byte_string += opcode.to_bytes(1, byteorder="little")
                 if isinstance(self.validator, _PyteAugmentedValidator):
                     # Validate it.
                     self.validator.get()
@@ -35,9 +35,9 @@ class _LoadOPSuper(object):
                 elif isinstance(self.validator, int):
                     var = self.validator
                 else:
-                    raise ValidationError("Could not turn `{}` into bytecode.".format(val))
+                    raise ValidationError("Could not turn `{}` into bytecode.".format(self.validator))
                 # Convert var into bytestring
-                b_var = var.to_bytes(1, byteorder="big")
+                b_var = var.to_bytes(1, byteorder="little")
                 byte_string += b_var
                 # Add a \x00 to the edge
                 byte_string += b"\x00"

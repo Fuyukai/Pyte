@@ -7,9 +7,9 @@ from . import tokens
 def _generate_load_call(opcode, index):
     bs = b""
     # add the opcode
-    bs += opcode.to_bytes(1, byteorder="big")
+    bs += opcode.to_bytes(1, byteorder="little")
     # Add the index
-    bs += index.to_bytes(2, byteorder="big")
+    bs += index.to_bytes(2, byteorder="little")
     # return it
     return bs
 
