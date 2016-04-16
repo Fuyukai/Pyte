@@ -1,6 +1,8 @@
 """
 Compiles python bytecode using `types.FunctionType`.
 """
+from pyte.superclasses import _PyteOp
+from pyte.exc import CompileError
 import types
 
 DEFAULT_STACKSIZE = 10
@@ -31,10 +33,17 @@ def compile(code: list, consts: list, varnames: list, func_name: str="<unknown, 
     # Compile code into a series of bytes.
     bc = b""
     for op in code:
-        # temporary
-        assert isinstance(op, int)
-        # Add it to `bc`
-        bc += op.to_bytes(1, byteorder="big")
+        # Get the bytecode.
+        if isinstance(op, _PyteOp):
+            bc_op = op.to_bytes()
+        elif isinstance(op, int):
+            bc_op = op.to_bytes(1, byteorder="big")
+        elif isinstance(op, bytes):
+            bc_op = op
+        else:
+            raise CompileError("Could not compile code of type {}".format(bc_op))
+        # Append it
+        bc += bc_op
 
     # Compile the object.
     obb = types.CodeType(
