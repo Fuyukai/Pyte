@@ -3,6 +3,7 @@ Compiles python bytecode using `types.FunctionType`.
 """
 from pyte.superclasses import _PyteOp
 from pyte.exc import CompileError
+import inspect
 import types
 
 DEFAULT_STACKSIZE = 10
@@ -68,9 +69,12 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
         (),  # freevars - no idea what this does
         ()  # cellvars - no idea what this does
     )
+    # Update globals
+    frame = inspect.stack()[1][0]
+    f_globals = frame.f_globals
 
     # Create a function type.
-    f = types.FunctionType(obb, {})
+    f = types.FunctionType(obb, f_globals)
     f.__name__ = func_name
 
     # return the func
