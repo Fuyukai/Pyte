@@ -8,7 +8,7 @@ import types
 DEFAULT_STACKSIZE = 10
 
 
-def compile(code: list, consts: list, varnames: list, func_name: str="<unknown, compiled>"):
+def compile(code: list, consts: list, names: list, varnames: list, func_name: str="<unknown, compiled>"):
     """
     Compiles a set of bytecode instructions into a working function, using Python's bytecode compiler.
 
@@ -21,6 +21,10 @@ def compile(code: list, consts: list, varnames: list, func_name: str="<unknown, 
             A list of constants.
             These constants can be any objects. They will not be validated.
 
+        names: list
+            A list of global names.
+            These will be used with LOAD_GLOBAL, and functions.
+
         varnames: list
             A list of `parameter arguments`.
 
@@ -29,6 +33,7 @@ def compile(code: list, consts: list, varnames: list, func_name: str="<unknown, 
     """
     varnames = tuple(varnames)
     consts = tuple(consts)
+    names = tuple(names)
 
     # Compile code into a series of bytes.
     bc = b""
@@ -54,7 +59,7 @@ def compile(code: list, consts: list, varnames: list, func_name: str="<unknown, 
         67,  # 67 is default for a normal function.
         bc,  # co_code - use the bytecode we generated.
         consts,  # co_consts
-        (),  # not entirely sure, I don't believe these are used inside functions.
+        names,  # co_names, used for global calls.
         varnames,  # arguments
         "<compiled>",  # use <unknown, compiled>
         func_name,  # co_name
