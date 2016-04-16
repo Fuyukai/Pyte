@@ -70,5 +70,12 @@ class CALL_FUNCTION(_PyteOp):
         bc += arg_count.to_bytes(1, byteorder="little")
         # Set the high byte.
         bc += b"\x00"
+
+        # Check if we should store the response.
+        if not self._store_list:
+            bc += tokens.POP_TOP.to_bytes(1, byteorder="little")
+        else:
+            # Misleading name, we use STORE_FAST, not a load call.
+            bc += util._generate_load_call(tokens.STORE_FAST, self._store_augmented.index)
         return bc
 
