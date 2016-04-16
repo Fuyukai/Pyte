@@ -10,8 +10,8 @@ varnames = pyte.create_varnames()
 # Create names (for globals)
 names = pyte.create_names("print")
 
-bc = [pyte.call.CALL_FUNCTION(names[0], consts[1]),
-      pyte.tokens.RETURN_VALUE]
+bc = [pyte.ops.CALL_FUNCTION(names[0], consts[1]),
+      pyte.ops.END_FUNCTION(consts[0])]
 
 # Compile the code.
 func = pyte.compile(bc, consts, names, varnames, stack_size=99)
