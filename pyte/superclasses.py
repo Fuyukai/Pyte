@@ -26,9 +26,14 @@ class _PyteAugmentedValidator(object):
     An augmented validator ensures that the bytecode objects do not segfault when the bytecode is compiled and ran,
     by validating the arguments.
     """
-    def __init__(self, index, get_partial):
+    def __init__(self, index, get_partial, name):
         self.index = index
         self.partial = get_partial
+        self._l_name = name
+
+    @property
+    def list_name(self):
+        return self._l_name
 
     def get(self):
         try:
@@ -45,8 +50,9 @@ class PyteAugmentedArgList(list):
 
     Instead of providing items to use, it provides validators that are validated in `compile`.
     """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, *args, name: str="consts"):
+        super().__init__(*args)
+        self.name = name
 
     def all(self):
         """
@@ -58,5 +64,5 @@ class PyteAugmentedArgList(list):
         # Create a partial to get the list item.
         part = functools.partial(super().__getitem__, item)
         # Return a new _PyteAugmentedValidator.
-        return _PyteAugmentedValidator(item, part)
+        return _PyteAugmentedValidator(item, part, self.name)
 
