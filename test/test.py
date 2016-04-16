@@ -1,9 +1,9 @@
 import pyte
 
 # Create a new consts value.
-consts = pyte.create_validated("Hello, world!")
+consts = pyte.create_consts("Hello, world!")
 # New varnames values
-varnames = pyte.create_validated()
+varnames = pyte.create_varnames()
 
 bc = [pyte.load.LOAD_CONST(consts[0]),
       pyte.tokens.RETURN_VALUE]

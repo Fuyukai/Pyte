@@ -8,6 +8,18 @@ from . import superclasses
 
 from .ops import load
 
+
 # Helper for creating new validated lists.
-def create_validated(*args) -> superclasses.PyteAugmentedArgList:
-    return superclasses.PyteAugmentedArgList(args)
+def _create_validated(*args, name) -> superclasses.PyteAugmentedArgList:
+    return superclasses.PyteAugmentedArgList(args, name=name)
+
+
+def create_names(*args) -> superclasses.PyteAugmentedArgList:
+    return _create_validated(*args, name="names")
+
+def create_consts(*args) -> superclasses.PyteAugmentedArgList:
+    return _create_validated(*args, name="consts")
+
+
+def create_varnames(*args) -> superclasses.PyteAugmentedArgList:
+    return _create_validated(*args, name="varnames")

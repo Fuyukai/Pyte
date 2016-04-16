@@ -35,11 +35,14 @@ class _PyteAugmentedValidator(object):
     def list_name(self):
         return self._l_name
 
-    def get(self):
+    def validate(self):
         try:
             return self.partial()
-        except IndexError as e:
-            raise ValidationError("Index `{}` does not exist at runtime".format(self.index)) from None
+        except IndexError:
+            raise ValidationError("Index `{}` does not exist at compile-time".format(self.index))
+
+    def get(self):
+        return self.validate()
 
 
 class PyteAugmentedArgList(list):

@@ -14,11 +14,16 @@ def _generate_load_call(opcode, index):
     return bs
 
 
+def generate_load_global(index) -> bytes:
+    return _generate_load_call(tokens.LOAD_GLOBAL, index)
+
+
 def generate_load_fast(index) -> bytes:
     """
     Generates a LOAD_FAST operation.
     """
     return _generate_load_call(tokens.LOAD_FAST, index)
+
 
 def generate_load_const(index) -> bytes:
     return _generate_load_call(tokens.LOAD_CONST, index)
