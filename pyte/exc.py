@@ -7,3 +7,7 @@ class ValidationError(Exception):
 
 class CompileError(Exception):
     pass
+
+
+class CompileWarning(Exception):
+    pass

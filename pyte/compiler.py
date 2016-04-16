@@ -1,6 +1,8 @@
 """
 Compiles python bytecode using `types.FunctionType`.
 """
+
+from pyte import tokens
 from pyte.superclasses import _PyteOp
 from pyte.exc import CompileError
 import inspect
@@ -60,6 +62,11 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
             raise CompileError("Could not compile code of type {}".format(op))
         # Append it
         bc += bc_op
+
+    # Check for a final RETURN_VALUE.
+    if bc[-1] != tokens.RETURN_VALUE:
+        raise CompileError("No default RETURN_VALUE. Add a `pyte.tokens.RETURN_VALUE` to the end of your bytecode if "
+                           "you don't need one.")
 
     # Set default flags
     flags = 2 | 64

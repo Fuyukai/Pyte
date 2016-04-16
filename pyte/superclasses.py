@@ -10,6 +10,9 @@ class _PyteOp(object):
     """
     This is a superclass for an opcode object, I.E an operation like `LOAD_FAST`.
     """
+    def __init__(self, *args):
+        # Generic init
+        self.args = args
 
     # How wide this operation is (in bytes)
     op_width = 0
