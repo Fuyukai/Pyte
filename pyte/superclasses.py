@@ -33,8 +33,8 @@ class _PyteAugmentedValidator(object):
     def get(self):
         try:
             return self.partial()
-        except IndexError:
-            raise ValidationError("Index `{}` does not exist at runtime".format(self.index))
+        except IndexError as e:
+            raise ValidationError("Index `{}` does not exist at runtime".format(self.index)) from None
 
 
 class PyteAugmentedArgList(list):
