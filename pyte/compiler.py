@@ -9,7 +9,7 @@ import types
 DEFAULT_STACKSIZE = 10
 
 
-def compile(code: list, consts: list, names: list, varnames: list, func_name: str="<unknown, compiled>"):
+def compile(code: list, consts: list, names: list, varnames: list, func_name: str="<unknown, compiled>", arg_count=0):
     """
     Compiles a set of bytecode instructions into a working function, using Python's bytecode compiler.
 
@@ -31,10 +31,16 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
 
         func_name: str
             The name of the function.
+
+        arg_count: int
+            The number of arguments to have. This must be less than or equal to the number of varnames.
     """
     varnames = tuple(varnames)
     consts = tuple(consts)
     names = tuple(names)
+
+    if arg_count > len(varnames):
+        raise CompileError("arg_count > len(varnames)")
 
     # Compile code into a series of bytes.
     bc = b""
@@ -53,7 +59,7 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
 
     # Compile the object.
     obb = types.CodeType(
-        len(varnames),  # Varnames - used for arguments.
+        arg_count,  # Varnames - used for arguments.
         0,  # Kwargs are not supported yet
         0,  # Length of names, not sure
         DEFAULT_STACKSIZE,  # Use 10 by default. TODO: up this dynamically
@@ -65,9 +71,9 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
         "<compiled>",  # use <unknown, compiled>
         func_name,  # co_name
         1,  # co_firstlineno, ignore this.
-        b'',  # co_lnotab - no idea what this does.
+        b'',  # https://svn.python.org/projects/python/trunk/Objects/lnotab_notes.txt
         (),  # freevars - no idea what this does
-        ()  # cellvars - no idea what this does
+        ()  # cellvars - used for nested functions - we don't use these.
     )
     # Update globals
     frame = inspect.stack()[1][0]

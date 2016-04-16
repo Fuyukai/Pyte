@@ -16,9 +16,12 @@ bc = [pyte.call.CALL_FUNCTION(names[0], consts[1]),
 # Compile the code.
 func = pyte.compile(bc, consts, names, varnames)
 
+print("==================================================")
 print(dis.code_info(func))
-print(func.__code__.co_code)
+print("\nFunction disassembly: ")
 dis.dis(func)
+
+print("\n==================================================\n")
 
 time.sleep(0.05)
 
