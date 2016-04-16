@@ -18,33 +18,36 @@ class _LoadOPSuper(object):
             Inner class, returned by __call__
             """
 
-            def __init__(self, validators: tuple):
+            def __init__(self, validator: object):
                 super().__init__()
                 # Set validators.
-                self.validators = validators
+                self.validator = validator
 
             def to_bytes(self) -> bytes:
                 byte_string = b""
                 # Add the opcode
                 byte_string += opcode.to_bytes(1, byteorder="big")
-                # Go through the validators.
-                for val in self.validators:
-                    if isinstance(val, _PyteAugmentedValidator):
-                        var = val.get()
-                    elif isinstance(val, int):
-                        var = val
-                    else:
-                        raise ValidationError("Could not turn `{}` into bytecode.".format(val))
-                    # Convert var into bytestring
-                    b_var = var.to_bytes(1, byteorder="big")
-                    byte_string += b_var
+                if isinstance(self.validator, _PyteAugmentedValidator):
+                    # Validate it.
+                    self.validator.get()
+                    # Get the index.
+                    var = self.validator.index
+                elif isinstance(self.validator, int):
+                    var = self.validator
+                else:
+                    raise ValidationError("Could not turn `{}` into bytecode.".format(val))
+                # Convert var into bytestring
+                b_var = var.to_bytes(1, byteorder="big")
+                byte_string += b_var
+                # Add a \x00 to the edge
+                byte_string += b"\x00"
                 return byte_string
 
         self._fake_class = _FakeInnerOP
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, arg):
         # Create a _FakeInnerOP.
-        return self._fake_class(args)
+        return self._fake_class(arg)
 
 # Define the LOAD_ operators.
 LOAD_FAST = _LoadOPSuper(tokens.LOAD_FAST)
