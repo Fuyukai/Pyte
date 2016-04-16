@@ -25,6 +25,10 @@ class END_FUNCTION(_PyteOp):
             assert isinstance(none_const, _PyteAugmentedValidator)
         except AssertionError:
             raise ValidationError("Passed in constant was not validated")
+
+        # Validate the arg
+        none_const.validate()
+
         if none_const.list_name == "consts":
             bc += util.generate_load_const(none_const.index)
         elif none_const.list_name == "varnames":
