@@ -14,7 +14,7 @@ bc = [pyte.call.CALL_FUNCTION(names[0], consts[1]),
       pyte.tokens.RETURN_VALUE]
 
 # Compile the code.
-func = pyte.compile(bc, consts, names, varnames)
+func = pyte.compile(bc, consts, names, varnames, stack_size=99)
 
 print("==================================================")
 print(dis.code_info(func))

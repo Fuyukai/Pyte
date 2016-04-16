@@ -6,10 +6,9 @@ from pyte.exc import CompileError
 import inspect
 import types
 
-DEFAULT_STACKSIZE = 10
 
-
-def compile(code: list, consts: list, names: list, varnames: list, func_name: str="<unknown, compiled>", arg_count=0):
+def compile(code: list, consts: list, names: list, varnames: list, func_name: str="<unknown, compiled>", arg_count=0,
+            stack_size: int=99):
     """
     Compiles a set of bytecode instructions into a working function, using Python's bytecode compiler.
 
@@ -34,6 +33,11 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
 
         arg_count: int
             The number of arguments to have. This must be less than or equal to the number of varnames.
+
+        stack_size: int
+            The maximum size of the function stack.
+            The normal Python compiler automatically allocates this, but we set it to a high number.
+            Override if you're getting random segfaults due to stack allocations.
     """
     varnames = tuple(varnames)
     consts = tuple(consts)
@@ -53,24 +57,27 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
         elif isinstance(op, bytes):
             bc_op = op
         else:
-            raise CompileError("Could not compile code of type {}".format(bc_op))
+            raise CompileError("Could not compile code of type {}".format(op))
         # Append it
         bc += bc_op
+
+    # Set default flags
+    flags = 2 | 64
 
     # Compile the object.
     obb = types.CodeType(
         arg_count,  # Varnames - used for arguments.
         0,  # Kwargs are not supported yet
         0,  # Length of names, not sure
-        DEFAULT_STACKSIZE,  # Use 10 by default. TODO: up this dynamically
-        67,  # 67 is default for a normal function.
+        stack_size,  # Use 10 by default. TODO: up this dynamically
+        flags,  # 67 is default for a normal function.
         bc,  # co_code - use the bytecode we generated.
         consts,  # co_consts
         names,  # co_names, used for global calls.
         varnames,  # arguments
         "<compiled>",  # use <unknown, compiled>
         func_name,  # co_name
-        1,  # co_firstlineno, ignore this.
+        flags,  # co_firstlineno, ignore this.
         b'',  # https://svn.python.org/projects/python/trunk/Objects/lnotab_notes.txt
         (),  # freevars - no idea what this does
         ()  # cellvars - used for nested functions - we don't use these.
