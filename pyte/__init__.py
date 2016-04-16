@@ -9,4 +9,4 @@ from . import superclasses
 
 # Helper for creating new validated lists.
 def create_validated(*args) -> superclasses.PyteAugmentedArgList:
-    return superclasses.PyteAugmentedArgList(*args)
+    return superclasses.PyteAugmentedArgList(args)

@@ -3,6 +3,8 @@ Superclasses for various Pyte things.
 """
 import functools
 
+from pyte.exc import ValidationError
+
 
 class _PyteOp(object):
     """
@@ -29,7 +31,10 @@ class _PyteAugmentedValidator(object):
         self.partial = get_partial
 
     def get(self):
-        return self.partial()
+        try:
+            return self.partial()
+        except IndexError:
+            raise ValidationError("Index `{}` does not exist at runtime".format(self.index))
 
 
 class PyteAugmentedArgList(list):
@@ -42,6 +47,12 @@ class PyteAugmentedArgList(list):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+    def all(self):
+        """
+        Return all values of self.
+        """
+        return [x for x in self]
 
     def __getitem__(self, item):
         # Create a partial to get the list item.
