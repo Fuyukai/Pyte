@@ -42,7 +42,7 @@ class _PyteAugmentedComparator(object):
     def to_bytecode(self, previous):
         bc = b""
         # Generate LOAD_
-        for val in [self.first, self.second]:
+        for val in [self.second, self.first]:
             if isinstance(val, _PyteOp):
                 # Mathematical ops
                 bc += val.to_bytes(previous + bc)
