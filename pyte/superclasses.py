@@ -70,6 +70,14 @@ class _PyteAugmentedValidator(object):
         self.partial = get_partial
         self._l_name = name
 
+    def to_load(self):
+        if self._l_name == "consts":
+            return util.generate_load_const(self.index)
+        elif self._l_name == "varnames":
+            return util.generate_load_fast(self.index)
+        elif self._l_name == "names":
+            return util.generate_load_global(self.index)
+
     @property
     def list_name(self):
         return self._l_name
