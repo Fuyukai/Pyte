@@ -17,7 +17,7 @@ def _compile_bc(code: list) -> bytes:
     for op in code:
         # Get the bytecode.
         if isinstance(op, _PyteOp):
-            bc_op = op.to_bytes()
+            bc_op = op.to_bytes(bc)
         elif isinstance(op, int):
             bc_op = op.to_bytes(1, byteorder="little")
         elif isinstance(op, bytes):

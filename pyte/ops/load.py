@@ -23,7 +23,7 @@ class _LoadOPSuper(object):
                 # Set validators.
                 self.validator = validator
 
-            def to_bytes(self) -> bytes:
+            def to_bytes(self, previous) -> bytes:
                 byte_string = b""
                 # Add the opcode
                 byte_string += opcode.to_bytes(1, byteorder="little")

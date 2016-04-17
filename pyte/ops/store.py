@@ -11,7 +11,7 @@ class STORE_FAST(_PyteOp):
     This represents a STORE_FAST operation.
     """
 
-    def to_bytes(self):
+    def to_bytes(self, previous):
         # Check the first arg.
         try:
             arg = self.args[0]

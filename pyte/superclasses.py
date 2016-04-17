@@ -22,7 +22,7 @@ class _PyteOp(object):
     # How wide this operation is (in bytes)
     op_width = 0
 
-    def to_bytes(self) -> bytes:
+    def to_bytes(self, previous: bytes) -> bytes:
         """
         Produces a byte string representing the `co_code` of this operator.
         """

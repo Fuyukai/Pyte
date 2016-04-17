@@ -28,7 +28,7 @@ class CALL_FUNCTION(_PyteOp):
         else:
             self._store_list = False
 
-    def to_bytes(self) -> bytes:
+    def to_bytes(self, previois) -> bytes:
         # Warning: Complex code ahead!
         # A brief explaination:
         # 1) We example self.args to check what we should load.
