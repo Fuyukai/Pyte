@@ -7,7 +7,5 @@ dependencies:
     - pip install pytest pytest-cov coveralls
 
 test:
-  override:
-    - py.test --cov=pyte -rfEsxXw -v --strict
   post:
     - coveralls

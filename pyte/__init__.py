@@ -1,13 +1,20 @@
 """
 Pyte package file, import some useful stuff from other functions.
 """
-
+import sys
 __version__ = "1.0.0"
 
-from .compiler import compile
-from . import tokens
-from . import superclasses
+if sys.version_info[1] == 2:
+    from . import tokens_32 as tokens
+elif sys.version_info[1] == 3:
+    from . import tokens_33 as tokens
+elif sys.version_info[1] == 4:
+    from . import tokens_34 as tokens
+elif sys.version_info[1] == 5:
+    from . import tokens_35 as tokens
 
+from .compiler import compile
+from . import superclasses
 from . import ops
 
 
