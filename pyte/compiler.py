@@ -3,7 +3,7 @@ Compiles python bytecode using `types.FunctionType`.
 """
 
 from pyte import tokens
-from pyte.superclasses import _PyteOp
+from pyte.superclasses import _PyteOp, _PyteAugmentedComparator
 from pyte.exc import CompileError
 import inspect
 import types
@@ -16,7 +16,7 @@ def _compile_bc(code: list) -> bytes:
     bc = b""
     for op in code:
         # Get the bytecode.
-        if isinstance(op, _PyteOp):
+        if isinstance(op, _PyteOp) or isinstance(op, _PyteAugmentedComparator):
             bc_op = op.to_bytes(bc)
         elif isinstance(op, int):
             bc_op = op.to_bytes(1, byteorder="little")

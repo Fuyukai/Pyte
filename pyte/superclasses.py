@@ -8,6 +8,12 @@ from pyte.exc import ValidationError
 from pyte import util
 
 import dis
+# Define operator map.
+
+BIN_OP_MAP = {}
+
+for num, val in enumerate(dis.cmp_op):
+    BIN_OP_MAP[val] = num
 
 
 class _PyteOp(object):
@@ -39,10 +45,13 @@ class _PyteAugmentedComparator(object):
         self.first = first
         self.second = second
 
+    def to_bytes(self, previous):
+        return self.to_bytecode(previous)
+
     def to_bytecode(self, previous):
         bc = b""
         # Generate LOAD_
-        for val in [self.second, self.first]:
+        for val in [self.first, self.second]:
             if isinstance(val, _PyteOp):
                 # Mathematical ops
                 bc += val.to_bytes(previous + bc)
@@ -167,22 +176,22 @@ class _PyteAugmentedValidator(object):
     # TODO: Don't pin these.
 
     def __eq__(self, other):
-        return _PyteAugmentedComparator(2, self, other)
+        return _PyteAugmentedComparator(BIN_OP_MAP["=="], self, other)
 
     def __ne__(self, other):
-        return _PyteAugmentedComparator(3, self, other)
+        return _PyteAugmentedComparator(BIN_OP_MAP["!="], self, other)
 
     def __gt__(self, other):
-        return _PyteAugmentedComparator(4, self, other)
+        return _PyteAugmentedComparator(BIN_OP_MAP[">"], self, other)
 
     def __lt__(self, other):
-        return _PyteAugmentedComparator(0, self, other)
+        return _PyteAugmentedComparator(BIN_OP_MAP["<"], self, other)
 
     def __ge__(self, other):
-        return _PyteAugmentedComparator(1, self, other)
+        return _PyteAugmentedComparator(BIN_OP_MAP[">="], self, other)
 
     def __le__(self, other):
-        return _PyteAugmentedComparator(5, self, other)
+        return _PyteAugmentedComparator(BIN_OP_MAP["<="], self, other)
 
 
 class PyteAugmentedArgList(list):
