@@ -14,7 +14,7 @@ from pyte.superclasses import _PyteOp, _PyteAugmentedValidator
 
 
 class END_FUNCTION(_PyteOp):
-    def to_bytes(self):
+    def to_bytes(self, previous):
         bc = b""
         # Check the consts
         try:
