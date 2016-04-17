@@ -71,6 +71,8 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
     # Set default flags
     flags = 1 | 2 | 64
 
+    frame_data = inspect.stack()[1]
+
     # Compile the object.
     obb = types.CodeType(
         arg_count,  # Varnames - used for arguments.
@@ -82,16 +84,15 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
         consts,  # co_consts
         names,  # co_names, used for global calls.
         varnames,  # arguments
-        "<compiled>",  # use <unknown, compiled>
+        frame_data.filename,  # use <unknown, compiled>
         func_name,  # co_name
-        flags,  # co_firstlineno, ignore this.
+        frame_data.lineno,  # co_firstlineno, ignore this.
         b'',  # https://svn.python.org/projects/python/trunk/Objects/lnotab_notes.txt
         (),  # freevars - no idea what this does
         ()  # cellvars - used for nested functions - we don't use these.
     )
     # Update globals
-    frame = inspect.stack()[1][0]
-    f_globals = frame.f_globals
+    f_globals = frame_data[0].f_globals
 
     # Create a function type.
     f = types.FunctionType(obb, f_globals)
