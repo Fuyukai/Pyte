@@ -93,9 +93,9 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
         consts,  # co_consts
         names,  # co_names, used for global calls.
         varnames,  # arguments
-        frame_data.filename,  # use <unknown, compiled>
+        frame_data[1],  # use <unknown, compiled>
         func_name,  # co_name
-        frame_data.lineno,  # co_firstlineno, ignore this.
+        frame_data[2],  # co_firstlineno, ignore this.
         b'',  # https://svn.python.org/projects/python/trunk/Objects/lnotab_notes.txt
         (),  # freevars - no idea what this does
         ()  # cellvars - used for nested functions - we don't use these.
