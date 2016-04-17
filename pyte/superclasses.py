@@ -89,8 +89,12 @@ class _PyteAugmentedValidator(object):
             return bc
 
         def __add__(self, other):
-            # Merge args
-            self.args += other.args
+            if other.__class__.__name__ == "_PyteAugmentedValidator":
+                tmp_args = list(self.args)
+                tmp_args.append(other)
+                self.args = tuple(tmp_args)
+            else:
+                self.args = tuple(list(self.args) + list(other.args))
             return self
 
     def __init__(self, index, get_partial, name):
