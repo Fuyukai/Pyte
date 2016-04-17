@@ -1,10 +1,11 @@
 machine:
   python:
-    version: 3.5.1  # Current Pyte has tokens built in for 3.5.1
+    version: 3.4.3  # Current Pyte has tokens built in for 3.5.1
 
 dependencies:
-  pre:
-    - pip install pytest pytest-cov coveralls
+  override:
+    - pip install tox tox-pyenv
+    - pyenv local 3.4.3 3.5.1
 
 test:
   post:
