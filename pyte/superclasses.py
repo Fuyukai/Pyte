@@ -88,7 +88,7 @@ class _PyteAugmentedValidator(object):
                     bc += self.opcode.to_bytes(1, byteorder="little")
             return bc
 
-        def __add__(self, other):
+        def __append_args(self, other):
             if other.__class__.__name__ == "_PyteAugmentedValidator":
                 tmp_args = list(self.args)
                 tmp_args.append(other)
@@ -96,6 +96,31 @@ class _PyteAugmentedValidator(object):
             else:
                 self.args = tuple(list(self.args) + list(other.args))
             return self
+
+        def __add__(self, other):
+            if self.opcode != tokens.BINARY_ADD:
+                raise ValueError("Cannot add in non-add mode.")
+            return self.__append_args(other)
+
+        def __sub__(self, other):
+            if self.opcode != tokens.BINARY_SUBTRACT:
+                raise ValueError("Cannot subtract in non-sub mode.")
+            return self.__append_args(other)
+
+        def __mul__(self, other):
+            if self.opcode != tokens.BINARY_MULTIPLY:
+                raise ValueError("Cannot multiply in non-mul mode.")
+            return self.__append_args(other)
+
+        def __truediv__(self, other):
+            if self.opcode != tokens.BINARY_TRUE_DIVIDE:
+                raise ValueError("Cannot truediv in non-truediv mode.")
+            return self.__append_args(other)
+
+        def __floordiv__(self, other):
+            if self.opcode != tokens.BINARY_FLOOR_DIVIDE:
+                raise ValueError("Cannot floordiv in non-floordiv mode.")
+            return self.__append_args(other)
 
     def __init__(self, index, get_partial, name):
         self.index = index
@@ -126,6 +151,18 @@ class _PyteAugmentedValidator(object):
     # Magic methods for maths stuff
     def __add__(self, other):
         return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_ADD)
+
+    def __sub__(self, other):
+        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_SUBTRACT)
+
+    def __mul__(self, other):
+        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_MULTIPLY)
+
+    def __floordiv__(self, other):
+        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_FLOOR_DIVIDE)
+
+    def __truediv__(self, other):
+        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_TRUE_DIVIDE)
 
     # TODO: Don't pin these.
 
