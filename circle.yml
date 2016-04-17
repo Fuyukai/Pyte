@@ -1,0 +1,13 @@
+machine:
+  python:
+    version: 3.5.1  # Current Pyte has tokens built in for 3.5.1
+
+dependencies:
+  pre:
+    - pip install pytest pytest-cov coveralls
+
+test:
+  override:
+    - py.test --cov=pyte -rfEsxXw -v --strict
+  post:
+    - coveralls

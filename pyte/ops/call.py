@@ -15,7 +15,7 @@ class CALL_FUNCTION(_PyteOp):
     This function takes one or more indexes as arguments.
     """
 
-    def __init__(self, function, *args, store_return: tuple = None):
+    def __init__(self, function, *args, store_return=None):
         # Set the function
         self.fun = function
         # TODO: Varargs.
@@ -23,8 +23,7 @@ class CALL_FUNCTION(_PyteOp):
 
         # Should we store on return?
         if store_return:
-            self._store_list = store_return[0]
-            self._store_augmented = store_return[1]
+            self._store_list = store_return
         else:
             self._store_list = False
 
@@ -76,6 +75,6 @@ class CALL_FUNCTION(_PyteOp):
             bc += tokens.POP_TOP.to_bytes(1, byteorder="little")
         else:
             # Misleading name, we use STORE_FAST, not a load call.
-            bc += util.generate_simple_call(tokens.STORE_FAST, self._store_augmented.index)
+            bc += util.generate_simple_call(tokens.STORE_FAST, self._store_list.index)
         return bc
 

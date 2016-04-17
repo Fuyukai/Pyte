@@ -2,11 +2,14 @@
 Pyte package file, import some useful stuff from other functions.
 """
 
+__version__ = "1.0.0"
+
 from .compiler import compile
 from . import tokens
 from . import superclasses
 
 from . import ops
+
 
 # Helper for creating new validated lists.
 def _create_validated(*args, name) -> superclasses.PyteAugmentedArgList:
@@ -15,6 +18,7 @@ def _create_validated(*args, name) -> superclasses.PyteAugmentedArgList:
 
 def create_names(*args) -> superclasses.PyteAugmentedArgList:
     return _create_validated(*args, name="names")
+
 
 def create_consts(*args) -> superclasses.PyteAugmentedArgList:
     return _create_validated(*args, name="consts")
