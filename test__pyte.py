@@ -4,8 +4,12 @@ Test suite for Pyte.
 import dis
 import types
 
+import pytest as pytest
+
 import pyte
 from pyte import tokens
+
+from pyte import exc
 
 
 def _fake_global():
@@ -79,3 +83,80 @@ def test_call_function_with_args():
     func = pyte.compile(instructions, consts, names=names, varnames=varnames)
 
     assert func() == 19
+
+
+def test_comparator():
+    # Test a comparator function
+    consts = pyte.create_consts(1, 2)
+    instructions = [
+        consts[0] <= consts[1],
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, names=[], varnames=[])
+
+    assert func()
+
+
+@pytest.mark.xfail(condition=exc.ValidationError, strict=True)
+def test_bad_index():
+    consts = pyte.create_consts()
+
+    instructions = [
+        pyte.ops.LOAD_CONST(consts[0]),
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, [], [])
+
+
+def test_if():
+    consts = pyte.create_consts(1, 2)
+
+    instructions = [
+        pyte.ops.IF(
+            conditions=[
+                consts[0] < consts[1]
+            ],
+            body=[
+                [
+                    pyte.ops.LOAD_CONST(consts[1])
+                ]
+            ]
+        ),
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, [], [])
+
+    assert func() == 2
+
+
+@pytest.mark.xfail(strict=True)
+def test_bad_if():
+    consts = pyte.create_consts(1, 2)
+
+    instructions = [
+        pyte.ops.IF(conditions=[consts[0] < consts[1]],
+                    body=[])
+    ]
+
+    func = pyte.compile(instructions, consts, [], [])
+
+    assert not func()
+
+
+def test_store():
+    consts = pyte.create_consts(2)
+    varnames = pyte.create_varnames("x")
+
+    instructions = [
+        pyte.ops.LOAD_CONST(consts[0]),
+        pyte.ops.STORE_FAST(varnames[0]),
+        pyte.ops.LOAD_FAST(varnames[0]),
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, varnames=varnames, names=[])
+
+    assert func() == 2
