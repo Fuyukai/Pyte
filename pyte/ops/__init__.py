@@ -4,6 +4,7 @@ Basic operations.
 
 from .call import CALL_FUNCTION
 from .load import LOAD_FAST, LOAD_CONST
+from .if_ import IF
 
 # Shortcut operation for LOAD_CONST[0] and RETURN_VALUE.
 from pyte import util

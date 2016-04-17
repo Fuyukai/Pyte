@@ -76,6 +76,6 @@ class CALL_FUNCTION(_PyteOp):
             bc += tokens.POP_TOP.to_bytes(1, byteorder="little")
         else:
             # Misleading name, we use STORE_FAST, not a load call.
-            bc += util._generate_load_call(tokens.STORE_FAST, self._store_augmented.index)
+            bc += util.generate_simple_call(tokens.STORE_FAST, self._store_augmented.index)
         return bc
 

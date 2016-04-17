@@ -26,5 +26,5 @@ class STORE_FAST(_PyteOp):
         # Validate the arg.
         arg.validate()
         # Generate a STORE_FAST opcode
-        opp = util._generate_load_call(tokens.STORE_FAST, arg.index)
+        opp = util.generate_simple_call(tokens.STORE_FAST, arg.index)
         return opp
