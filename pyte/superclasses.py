@@ -3,13 +3,18 @@ Superclasses for various Pyte things.
 """
 import functools
 
+from pyte import tokens
 from pyte.exc import ValidationError
+from pyte import util
+
+import dis
 
 
 class _PyteOp(object):
     """
     This is a superclass for an opcode object, I.E an operation like `LOAD_FAST`.
     """
+
     def __init__(self, *args):
         # Generic init
         self.args = args
@@ -24,11 +29,42 @@ class _PyteOp(object):
         raise NotImplementedError
 
 
+class _PyteAugmentedComparator(object):
+    """
+    An augmented comparator is used for the IF statements, in order to generate the correct bytecode.
+    """
+
+    def __init__(self, opcode: int, first: _PyteAugmentedValidator, second: _PyteAugmentedValidator):
+        self.opcode = opcode
+        self.first = first
+        self.second = second
+
+    def to_bytecode(self):
+        # Validate both
+        self.first.validate()
+        self.second.validate()
+        bc = b""
+        # Generate LOAD_
+        for val in [self.first, self.second]:
+            if val.list_name == "consts":
+                bc += util.generate_load_const(val.index)
+            elif val.list_name == "names":
+                bc += util.generate_load_global(val.index)
+            elif val.list_name == "varnames":
+                bc += util.generate_load_fast(val.index)
+        # Add the CMP_OP
+        bc += tokens.COMPARE_OP.to_bytes(1, byteorder="little")
+        # Add the operator
+        bc += self.opcode.to_bytes(2, byteorder="little")
+        return bc
+
+
 class _PyteAugmentedValidator(object):
     """
     An augmented validator ensures that the bytecode objects do not segfault when the bytecode is compiled and ran,
     by validating the arguments.
     """
+
     def __init__(self, index, get_partial, name):
         self.index = index
         self.partial = get_partial
@@ -47,6 +83,24 @@ class _PyteAugmentedValidator(object):
     def get(self):
         return self.validate()
 
+    def __eq__(self, other):
+        return _PyteAugmentedComparator(dis.cmp_op[2], self, other)
+
+    def __ne__(self, other):
+        return _PyteAugmentedComparator(dis.cmp_op[3], self, other)
+
+    def __gt__(self, other):
+        return _PyteAugmentedComparator(dis.cmp_op[4], self, other)
+
+    def __lt__(self, other):
+        return _PyteAugmentedComparator(dis.cmp_op[0], self, other)
+
+    def __ge__(self, other):
+        return _PyteAugmentedComparator(dis.cmp_op[1], self, other)
+
+    def __le__(self, other):
+        return _PyteAugmentedComparator(dis.cmp_op[5], self, other)
+
 
 class PyteAugmentedArgList(list):
     """
@@ -56,7 +110,8 @@ class PyteAugmentedArgList(list):
 
     Instead of providing items to use, it provides validators that are validated in `compile`.
     """
-    def __init__(self, *args, name: str="consts"):
+
+    def __init__(self, *args, name: str = "consts"):
         super().__init__(*args)
         self.name = name
 
@@ -71,4 +126,3 @@ class PyteAugmentedArgList(list):
         part = functools.partial(super().__getitem__, item)
         # Return a new _PyteAugmentedValidator.
         return _PyteAugmentedValidator(item, part, self.name)
-
