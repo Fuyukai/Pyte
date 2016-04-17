@@ -3,6 +3,7 @@ Basic operations.
 """
 
 from .call import CALL_FUNCTION
+from .store import STORE_FAST
 from .load import LOAD_FAST, LOAD_CONST
 from .if_ import IF
 

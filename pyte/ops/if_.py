@@ -55,7 +55,7 @@ class IF(_PyteOp):
         # Loop over the conditions and bodies
         for condition, body in zip(self.conditions, self.body):
             # Generate the conditional data.
-            cond_bytecode = condition.to_bytecode()
+            cond_bytecode = condition.to_bytecode(previous)
             bc += cond_bytecode
             # Complex calculation.
             # First, generate the bytecode for all tokens in the body.

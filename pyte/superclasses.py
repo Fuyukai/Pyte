@@ -39,13 +39,14 @@ class _PyteAugmentedComparator(object):
         self.first = first
         self.second = second
 
-    def to_bytecode(self):
-        # Validate both
-        self.first.validate()
-        self.second.validate()
+    def to_bytecode(self, previous):
         bc = b""
         # Generate LOAD_
         for val in [self.first, self.second]:
+            if isinstance(val, _PyteOp):
+                # Mathematical ops
+                bc += val.to_bytes(previous + bc)
+                continue
             if val.list_name == "consts":
                 bc += util.generate_load_const(val.index)
             elif val.list_name == "names":
@@ -64,6 +65,33 @@ class _PyteAugmentedValidator(object):
     An augmented validator ensures that the bytecode objects do not segfault when the bytecode is compiled and ran,
     by validating the arguments.
     """
+
+    class _FakeMathematicalOP(_PyteOp):
+
+        def __init__(self, *args, opcode: int = None):
+            super().__init__(*args)
+            if opcode is None:
+                # what
+                raise ValidationError("This should never happen")
+            self.opcode = opcode
+
+        def to_bytes(self, previous: bytes):
+            bc = b""
+            # Add together all of the args.
+            for index, arg in enumerate(self.args):
+                # Validate the arg.
+                arg.validate()
+                # Get the LOAD_ call.
+                bc += arg.to_load()
+                # Add a BINARY_* depending on if we are the first argument, or any more arguments.
+                if index != 0:
+                    bc += self.opcode.to_bytes(1, byteorder="little")
+            return bc
+
+        def __add__(self, other):
+            # Merge args
+            self.args += other.args
+            return self
 
     def __init__(self, index, get_partial, name):
         self.index = index
@@ -90,6 +118,10 @@ class _PyteAugmentedValidator(object):
 
     def get(self):
         return self.validate()
+
+    # Magic methods for maths stuff
+    def __add__(self, other):
+        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_ADD)
 
     # TODO: Don't pin these.
 
