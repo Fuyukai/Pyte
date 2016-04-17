@@ -34,7 +34,7 @@ class _PyteAugmentedComparator(object):
     An augmented comparator is used for the IF statements, in order to generate the correct bytecode.
     """
 
-    def __init__(self, opcode: int, first: _PyteAugmentedValidator, second: _PyteAugmentedValidator):
+    def __init__(self, opcode: int, first, second):
         self.opcode = opcode
         self.first = first
         self.second = second
@@ -83,23 +83,25 @@ class _PyteAugmentedValidator(object):
     def get(self):
         return self.validate()
 
+    # TODO: Don't pin these.
+
     def __eq__(self, other):
-        return _PyteAugmentedComparator(dis.cmp_op[2], self, other)
+        return _PyteAugmentedComparator(2, self, other)
 
     def __ne__(self, other):
-        return _PyteAugmentedComparator(dis.cmp_op[3], self, other)
+        return _PyteAugmentedComparator(3, self, other)
 
     def __gt__(self, other):
-        return _PyteAugmentedComparator(dis.cmp_op[4], self, other)
+        return _PyteAugmentedComparator(4, self, other)
 
     def __lt__(self, other):
-        return _PyteAugmentedComparator(dis.cmp_op[0], self, other)
+        return _PyteAugmentedComparator(0, self, other)
 
     def __ge__(self, other):
-        return _PyteAugmentedComparator(dis.cmp_op[1], self, other)
+        return _PyteAugmentedComparator(1, self, other)
 
     def __le__(self, other):
-        return _PyteAugmentedComparator(dis.cmp_op[5], self, other)
+        return _PyteAugmentedComparator(5, self, other)
 
 
 class PyteAugmentedArgList(list):

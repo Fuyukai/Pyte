@@ -9,8 +9,29 @@ import inspect
 import types
 
 
-def compile(code: list, consts: list, names: list, varnames: list, func_name: str="<unknown, compiled>", arg_count=0,
-            stack_size: int=99):
+def _compile_bc(code: list) -> bytes:
+    """
+    Compiles Pyte objects into a bytecode string.
+    """
+    bc = b""
+    for op in code:
+        # Get the bytecode.
+        if isinstance(op, _PyteOp):
+            bc_op = op.to_bytes()
+        elif isinstance(op, int):
+            bc_op = op.to_bytes(1, byteorder="little")
+        elif isinstance(op, bytes):
+            bc_op = op
+        else:
+            raise CompileError("Could not compile code of type {}".format(type(op)))
+        # Append it
+        bc += bc_op
+
+    return bc
+
+
+def compile(code: list, consts: list, names: list, varnames: list, func_name: str = "<unknown, compiled>", arg_count=0,
+            stack_size: int = 99):
     """
     Compiles a set of bytecode instructions into a working function, using Python's bytecode compiler.
 
@@ -48,20 +69,8 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
     if arg_count > len(varnames):
         raise CompileError("arg_count > len(varnames)")
 
-    # Compile code into a series of bytes.
-    bc = b""
-    for op in code:
-        # Get the bytecode.
-        if isinstance(op, _PyteOp):
-            bc_op = op.to_bytes()
-        elif isinstance(op, int):
-            bc_op = op.to_bytes(1, byteorder="little")
-        elif isinstance(op, bytes):
-            bc_op = op
-        else:
-            raise CompileError("Could not compile code of type {}".format(op))
-        # Append it
-        bc += bc_op
+    # Compile it.
+    bc = _compile_bc(code)
 
     # Check for a final RETURN_VALUE.
     if bc[-1] != tokens.RETURN_VALUE:
