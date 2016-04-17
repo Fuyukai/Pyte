@@ -160,3 +160,136 @@ def test_store():
     func = pyte.compile(instructions, consts, varnames=varnames, names=[])
 
     assert func() == 2
+
+
+def test_addition():
+    consts = pyte.create_consts(1, 2)
+
+    instructions = [
+        consts[0] + consts[1],
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, [], [])
+
+    assert func() == 3
+
+
+def test_chained_addition():
+    consts = pyte.create_consts(1, 2, 3)
+
+    instructions = [
+        consts[0] + consts[1] + consts[2],
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, [], [])
+
+    assert func() == 6
+
+
+def test_subtraction():
+    consts = pyte.create_consts(3, 2)
+
+    instructions = [
+        consts[0] - consts[1],
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, [], [])
+
+    assert func() == 1
+
+
+def test_chained_subtraction():
+    consts = pyte.create_consts(3, 2, 1)
+
+    instructions = [
+        consts[0] - consts[1] - consts[2],
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, [], [])
+
+    assert func() == 0
+
+
+def test_multiplication():
+    consts = pyte.create_consts(3, 2)
+
+    instructions = [
+        consts[0] * consts[1],
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, [], [])
+
+    assert func() == 6
+
+
+def test_chained_multiplication():
+    consts = pyte.create_consts(3, 2, 2)
+
+    instructions = [
+        consts[0] * consts[1] * consts[2],
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, [], [])
+
+    assert func() == 12
+
+
+def test_div():
+    consts = pyte.create_consts(6, 2)
+
+    instructions = [
+        consts[0] / consts[1],
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, [], [])
+
+    assert func() == 3.0
+
+
+def test_floordiv():
+    consts = pyte.create_consts(3, 2)
+
+    instructions = [
+        consts[0] // consts[1],
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, [], [])
+
+    assert func() == 1
+
+
+def test_nameload():
+    consts = pyte.create_consts(3)
+    varnames = pyte.create_varnames("x")
+
+    instructions = [
+        pyte.ops.LOAD_CONST(consts[0]),
+        pyte.ops.STORE_FAST(varnames[0]),
+        consts[0] + varnames[0],
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, varnames=varnames, names=[])
+
+    assert func() == 6
+
+
+@pytest.mark.xfail(strict=True)
+def test_bad_mathematics():
+    consts = pyte.create_consts(1, 2, 3)
+
+    instructions = [
+        consts[0] + consts[1] - consts[2],
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, [], [])
+
