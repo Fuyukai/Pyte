@@ -4,7 +4,7 @@ Basic operations.
 
 from .call import CALL_FUNCTION
 from .store import STORE_FAST
-from .load import LOAD_FAST, LOAD_CONST
+from .load import LOAD_FAST, LOAD_CONST, LOAD_ATTR
 from .if_ import IF
 
 # Shortcut operation for LOAD_CONST[0] and RETURN_VALUE.

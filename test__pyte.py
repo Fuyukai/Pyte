@@ -109,6 +109,8 @@ def test_bad_index():
 
     func = pyte.compile(instructions, consts, [], [])
 
+    func()
+
 
 def test_if():
     consts = pyte.create_consts(1, 2)
@@ -293,3 +295,17 @@ def test_bad_mathematics():
 
     func = pyte.compile(instructions, consts, [], [])
 
+
+def test_load_attr():
+    consts = pyte.create_consts(1)
+    names = pyte.create_names("bit_length")
+
+    instructions = [
+        pyte.ops.LOAD_CONST(consts[0]),
+        pyte.ops.LOAD_ATTR(names[0]),
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, names=names, varnames=[])
+
+    assert func() == (1).bit_length

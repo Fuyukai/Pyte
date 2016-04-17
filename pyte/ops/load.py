@@ -52,3 +52,4 @@ class _LoadOPSuper(object):
 # Define the LOAD_ operators.
 LOAD_FAST = _LoadOPSuper(tokens.LOAD_FAST)
 LOAD_CONST = _LoadOPSuper(tokens.LOAD_CONST)
+LOAD_ATTR = _LoadOPSuper(tokens.LOAD_ATTR)
