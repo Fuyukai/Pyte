@@ -1,8 +1,5 @@
 import os
-
-import sys
 from setuptools import setup, find_packages
-from setuptools.command.test import test as TestCommand
 
 rootpath = os.path.abspath(os.path.dirname(__file__))
 
@@ -20,7 +17,7 @@ def extract_version(module='pyte'):
 
 
 setup(
-    name='pyte',
+    name='pytec',
     version=extract_version(),
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     url='https://github.com/SunDwarf/Pyte',
