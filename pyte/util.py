@@ -2,6 +2,7 @@
 Miscellaneous utilities.
 """
 import collections
+import dis
 
 from . import tokens
 
@@ -18,9 +19,12 @@ def generate_simple_call(opcode, index):
 
 def generate_bytecode_from_obb(obb: object, previous: bytes) -> bytes:
     # Generates bytecode from a specified object, be it a validator or an int or bytes even.
-    if obb.__class__.__name__ in ["_PyteOp", "_PyteAugmentedComparator"]:
+    if obb.__class__.__name__ in ["_PyteOp", "_BuildList", "_BuildTuple"]:
+        return obb.to_bytes(previous)
+    elif obb.__class__.__name__ in ["_PyteAugmentedComparator", "_FakeMathematicalOP"]:
         return obb.to_bytes(previous)
     elif obb.__class__.__name__ in ["_PyteAugmentedValidator"]:
+        obb.validate()
         return obb.to_load()
     elif isinstance(obb, int):
         return obb.to_bytes((obb.bit_length() + 7) // 8, byteorder="little") or b''
@@ -53,3 +57,23 @@ def flatten(l):
                 yield sub
         else:
             yield el
+
+def _get_name_info(name_index, name_list):
+    """Helper to get optional details about named references
+
+       Returns the dereferenced name as both value and repr if the name
+       list is defined.
+       Otherwise returns the name index and its repr().
+    """
+    argval = name_index
+    if name_list is not None:
+        try:
+            argval = name_list[name_index]
+        except IndexError:
+            return "(unknown)", "(unknown)"
+        argrepr = argval
+    else:
+        argrepr = repr(argval)
+    return argval, argrepr
+
+dis._get_name_info = _get_name_info
