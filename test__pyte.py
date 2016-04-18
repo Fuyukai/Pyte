@@ -309,3 +309,15 @@ def test_load_attr():
     func = pyte.compile(instructions, consts, names=names, varnames=[])
 
     assert func() == (1).bit_length
+
+
+@pytest.mark.xfail(condition=exc.ValidationError, strict=True)
+def test_bad_load():
+    consts = pyte.create_consts(1)
+
+    instructions = [
+        pyte.ops.LOAD_FAST(consts[0]),  # LOAD_FAST a const
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, names=[], varnames=[])

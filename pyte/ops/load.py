@@ -11,7 +11,7 @@ class _LoadOPSuper(object):
     Generic super class for LOAD_ operations.
     """
 
-    def __init__(self, opcode: int):
+    def __init__(self, opcode: int, list_restriction: str):
 
         class _FakeInnerOP(_PyteOp):
             """
@@ -28,8 +28,10 @@ class _LoadOPSuper(object):
                 # Add the opcode
                 byte_string += opcode.to_bytes(1, byteorder="little")
                 if isinstance(self.validator, _PyteAugmentedValidator):
+                    if self.validator.list_name != list_restriction:
+                        raise ValidationError("LOAD_ call used with wrong list.")
                     # Validate it.
-                    self.validator.get()
+                    self.validator.validate()
                     # Get the index.
                     var = self.validator.index
                 elif isinstance(self.validator, int):
@@ -50,6 +52,6 @@ class _LoadOPSuper(object):
         return self._fake_class(arg)
 
 # Define the LOAD_ operators.
-LOAD_FAST = _LoadOPSuper(tokens.LOAD_FAST)
-LOAD_CONST = _LoadOPSuper(tokens.LOAD_CONST)
-LOAD_ATTR = _LoadOPSuper(tokens.LOAD_ATTR)
+LOAD_FAST = _LoadOPSuper(tokens.LOAD_FAST, "varnames")
+LOAD_CONST = _LoadOPSuper(tokens.LOAD_CONST, "consts")
+LOAD_ATTR = _LoadOPSuper(tokens.LOAD_ATTR, "names")
