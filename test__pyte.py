@@ -5,6 +5,7 @@ import dis
 import types
 
 import pytest as pytest
+import sys
 
 import pyte
 from pyte import tokens
@@ -321,3 +322,15 @@ def test_bad_load():
     ]
 
     func = pyte.compile(instructions, consts, names=[], varnames=[])
+
+
+@pytest.mark.xfail(condition=exc.CompileError)
+@pytest.mark.skipif(sys.version_info[0:2] <= (3, 3), reason="Stack validation does not work on Python <3.4")
+def test_bad_stack():
+    # This will attempt to load an empty stack. RIP. Normally this would seg-fault, but the validator prevents this
+    # from compiling by simulating the stack.
+    instructions = [
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, [], [], [])

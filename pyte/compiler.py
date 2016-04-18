@@ -46,7 +46,7 @@ def _simulate_stack(code: list) -> int:
 
     def _check_stack(ins):
         if curr_stack < 0:
-            raise ValidationError("Stack turned negative on instruction: {}".format(ins))
+            raise CompileError("Stack turned negative on instruction: {}".format(ins))
         if curr_stack > max_stack:
             return curr_stack
 
