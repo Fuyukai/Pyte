@@ -53,21 +53,11 @@ def _simulate_stack(code: list) -> int:
     # Iterate over the bytecode.
     for instruction in code:
         assert isinstance(instruction, dis.Instruction)
-        # Check if it's a LOAD_ call.
-        if instruction.opname.startswith("LOAD_"):
-            # It's a stack push. Simulate it.
-            curr_stack += 1
-        elif instruction.opname.startswith("STORE_"):
-            curr_stack -= 1
-        elif instruction.opname.startswith("BINARY_") or instruction.opname.startswith("COMPARE_"):
-            # These pop two and put one.
-            curr_stack -= 1
-        elif instruction.opcode == tokens.CALL_FUNCTION:
-            # Call function, get the args and kwargs out
-            args, kwargs = instruction.arg.to_bytes(2, byteorder="little")
-            curr_stack -= args
-            curr_stack -= (kwargs * 2)
-
+        if instruction.arg is not None:
+            effect = dis.stack_effect(instruction.opcode, instruction.arg)
+        else:
+            effect = dis.stack_effect(instruction.opcode)
+        curr_stack += effect
         # Re-check the stack.
         _should_new_stack = _check_stack(instruction)
         if _should_new_stack:
