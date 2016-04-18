@@ -7,6 +7,7 @@ import sys
 import warnings
 
 from pyte import tokens
+from pyte import util
 from pyte.superclasses import _PyteOp, _PyteAugmentedComparator
 from pyte.exc import CompileError, ValidationError, CompileWarning
 import inspect
@@ -96,6 +97,9 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
     consts = tuple(consts)
     names = tuple(names)
 
+    # Flatten the code list.
+    code = util.flatten(code)
+
     if arg_count > len(varnames):
         raise CompileError("arg_count > len(varnames)")
 
@@ -114,7 +118,14 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
 
     # Validate the stack.
     if sys.version_info[0:2] > (3, 3):
-        stack_size = _simulate_stack(dis._get_instructions_bytes(bc, constants=consts, names=names, varnames=varnames))
+        try:
+            stack_size = _simulate_stack(dis._get_instructions_bytes(
+                bc, constants=consts, names=names, varnames=varnames)
+            )
+        except CompileError as e:
+            print("Disassembly:")
+            dis.dis(bc)
+            raise e
     else:
         warnings.warn("Cannot check stack for safety. Your functions may segfault.")
         stack_size = 99
