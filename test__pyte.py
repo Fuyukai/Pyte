@@ -348,3 +348,17 @@ def test_attr_syntax():
     func = pyte.compile(instructions, consts, names=names, varnames=[])
 
     assert func() == (1).bit_length
+
+
+def test_build_list():
+    # Test building a list with BUILD_LIST
+    consts = pyte.create_consts(1, 2)
+
+    instructions = [
+        pyte.ops.LIST(consts[0], consts[1]),
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts=consts, names=[], varnames=[])
+
+    assert func() == [1, 2]

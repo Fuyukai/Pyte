@@ -16,6 +16,20 @@ def generate_simple_call(opcode, index):
     return bs
 
 
+def generate_bytecode_from_obb(obb: object, previous: bytes) -> bytes:
+    # Generates bytecode from a specified object, be it a validator or an int or bytes even.
+    if obb.__class__.__name__ in ["_PyteOp", "_PyteAugmentedComparator"]:
+        return obb.to_bytes(previous)
+    elif obb.__class__.__name__ in ["_PyteAugmentedValidator"]:
+        return obb.to_load()
+    elif isinstance(obb, int):
+        return obb.to_bytes((obb.bit_length() + 7) // 8, byteorder="little") or b''
+    elif isinstance(obb, bytes):
+        return obb
+    else:
+        raise TypeError("`{}` was not a valid bytecode-encodable item".format(obb))
+
+
 def generate_load_global(index) -> bytes:
     return generate_simple_call(tokens.LOAD_GLOBAL, index)
 

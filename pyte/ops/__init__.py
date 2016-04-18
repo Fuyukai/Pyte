@@ -7,6 +7,8 @@ from .store import STORE_FAST
 from .load import LOAD_FAST, LOAD_CONST, LOAD_ATTR
 from .if_ import IF
 
+from .builders import LIST
+
 # Shortcut operation for LOAD_CONST[0] and RETURN_VALUE.
 from pyte import util
 from pyte import tokens
