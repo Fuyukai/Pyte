@@ -63,7 +63,7 @@ def test_call_function():
                     pyte.ops.LOAD_FAST(varnames[0]),
                     pyte.tokens.RETURN_VALUE]
 
-    func = pyte.compile(instructions, consts, names=names, varnames=[])
+    func = pyte.compile(instructions, consts, names=names, varnames=varnames)
 
     assert func() is True
 

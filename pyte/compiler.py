@@ -1,10 +1,14 @@
 """
 Compiles python bytecode using `types.FunctionType`.
 """
+import dis
+
+import sys
+import warnings
 
 from pyte import tokens
 from pyte.superclasses import _PyteOp, _PyteAugmentedComparator
-from pyte.exc import CompileError
+from pyte.exc import CompileError, ValidationError, CompileWarning
 import inspect
 import types
 
@@ -30,8 +34,49 @@ def _compile_bc(code: list) -> bytes:
     return bc
 
 
-def compile(code: list, consts: list, names: list, varnames: list, func_name: str = "<unknown, compiled>", arg_count=0,
-            stack_size: int = 99):
+def _simulate_stack(code: list) -> int:
+    """
+    Simulates the actions of the stack, to check safety.
+
+    This returns the maximum needed stack.
+    """
+
+    max_stack = 0
+    curr_stack = 0
+
+    def _check_stack(ins):
+        if curr_stack < 0:
+            raise ValidationError("Stack turned negative on instruction: {}".format(ins))
+        if curr_stack > max_stack:
+            return curr_stack
+
+    # Iterate over the bytecode.
+    for instruction in code:
+        assert isinstance(instruction, dis.Instruction)
+        # Check if it's a LOAD_ call.
+        if instruction.opname.startswith("LOAD_"):
+            # It's a stack push. Simulate it.
+            curr_stack += 1
+        elif instruction.opname.startswith("STORE_"):
+            curr_stack -= 1
+        elif instruction.opname.startswith("BINARY_") or instruction.opname.startswith("COMPARE_"):
+            # These pop two and put one.
+            curr_stack -= 1
+        elif instruction.opcode == tokens.CALL_FUNCTION:
+            # Call function, get the args and kwargs out
+            args, kwargs = instruction.arg.to_bytes(2, byteorder="little")
+            curr_stack -= args
+            curr_stack -= (kwargs * 2)
+
+        # Re-check the stack.
+        _should_new_stack = _check_stack(instruction)
+        if _should_new_stack:
+            max_stack = _should_new_stack
+
+    return max_stack
+
+
+def compile(code: list, consts: list, names: list, varnames: list, func_name: str = "<unknown, compiled>", arg_count=0):
     """
     Compiles a set of bytecode instructions into a working function, using Python's bytecode compiler.
 
@@ -56,11 +101,6 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
 
         arg_count: int
             The number of arguments to have. This must be less than or equal to the number of varnames.
-
-        stack_size: int
-            The maximum size of the function stack.
-            The normal Python compiler automatically allocates this, but we set it to a high number.
-            Override if you're getting random segfaults due to stack allocations.
     """
     varnames = tuple(varnames)
     consts = tuple(consts)
@@ -82,7 +122,13 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
 
     frame_data = inspect.stack()[1]
 
-    # Compile the object.
+    # Validate the stack.
+    if sys.version_info[0:2] > (3, 3):
+        stack_size = _simulate_stack(dis._get_instructions_bytes(bc, constants=consts, names=names, varnames=varnames))
+    else:
+        warnings.warn("Cannot check stack for safety. Your functions may segfault.")
+        stack_size = 99
+
     obb = types.CodeType(
         arg_count,  # Varnames - used for arguments.
         0,  # Kwargs are not supported yet
