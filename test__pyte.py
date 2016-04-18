@@ -57,7 +57,7 @@ def test_call_function():
     # Call _fake_global
     consts = pyte.create_consts()
     names = pyte.create_names("_fake_global")
-    varnames = pyte.create_names("x")
+    varnames = pyte.create_varnames("x")
 
     instructions = [pyte.ops.CALL_FUNCTION(names[0], store_return=varnames[0]),
                     pyte.ops.LOAD_FAST(varnames[0]),
@@ -72,7 +72,7 @@ def test_call_function_with_args():
     # Call _fake_global_with_arg
     consts = pyte.create_consts(19)
     names = pyte.create_names("_fake_global_with_arg")
-    varnames = pyte.create_names("x")
+    varnames = pyte.create_varnames("x")
 
     instructions = [
         pyte.ops.CALL_FUNCTION(names[0], consts[0], store_return=varnames[0]),
