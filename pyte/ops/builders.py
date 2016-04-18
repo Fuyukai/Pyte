@@ -49,4 +49,16 @@ class _BuildList(_Builder):
         bc += self._should_store()
         return bc
 
+
+class _BuildTuple(_Builder):
+    def to_bytes(self, previous: bytes):
+        bc = self._to_bytes_basic(previous)
+        # Add a BUILD_TUPLE instruction
+        bc += tokens.BUILD_TUPLE.to_bytes(1, byteorder="little")
+        bc += len(list(self.args)).to_bytes(2, byteorder="little")
+        # If we should store, add a STORE_FAST instruction
+        bc += self._should_store()
+        return bc
+
 LIST = _BuildList
+TUPLE = _BuildTuple

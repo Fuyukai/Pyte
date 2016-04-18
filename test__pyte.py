@@ -362,3 +362,15 @@ def test_build_list():
     func = pyte.compile(instructions, consts=consts, names=[], varnames=[])
 
     assert func() == [1, 2]
+
+
+def test_func_with_args():
+    varnames = pyte.create_varnames("a")
+
+    instructions = [
+        pyte.ops.END_FUNCTION(varnames[0])
+    ]
+
+    func = pyte.compile(instructions, [], names=[], varnames=varnames, arg_count=1)
+
+    assert func(1) == 1

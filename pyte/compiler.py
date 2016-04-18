@@ -9,7 +9,7 @@ import warnings
 from pyte import tokens
 from pyte import util
 from pyte.superclasses import _PyteOp, _PyteAugmentedComparator
-from pyte.exc import CompileError, ValidationError, CompileWarning
+from pyte.exc import CompileError
 import inspect
 import types
 
