@@ -59,7 +59,6 @@ class FOR_LOOP(_PyteOp):
         # Add a FOR_ITER, using len(body_bc)
         body_bc = util.generate_simple_call(tokens.FOR_ITER, len(body_bc) - 1) + body_bc
         # Add the SETUP_LOOP call
-        print(prev_len)
         bc = util.generate_simple_call(tokens.SETUP_LOOP, prev_len + len(body_bc) - 6) + bc + body_bc
 
         return bc
