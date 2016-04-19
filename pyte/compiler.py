@@ -137,7 +137,7 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
     obb = types.CodeType(
         arg_count,  # Varnames - used for arguments.
         0,  # Kwargs are not supported yet
-        len(varnames) - arg_count,  # co_nlocals -> Non-argument local variables
+        len(varnames),  # co_nlocals -> Non-argument local variables
         stack_size,  # Use 10 by default. TODO: up this dynamically
         flags,  # 67 is default for a normal function.
         bc,  # co_code - use the bytecode we generated.
