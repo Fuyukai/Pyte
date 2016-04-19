@@ -71,6 +71,20 @@ def _simulate_stack(code: list) -> int:
     return max_stack
 
 
+def _optimize_warn_pass(bc: list):
+    # Check for shitty calls
+    previous = None
+    for op in bc:
+        assert isinstance(op, dis.Instruction)
+        if previous is None:
+            previous = op
+            continue
+        if previous.opname == "STORE_FAST":
+            # check for consecutive STORE then LOAD calls
+            if op.opname == "LOAD_FAST" and op.arg == previous.arg:
+                warnings.warn("STORE_FAST call followed by LOAD_FAST call has no effect")
+
+
 def compile(code: list, consts: list, names: list, varnames: list, func_name: str = "<unknown, compiled>", arg_count=0):
     """
     Compiles a set of bytecode instructions into a working function, using Python's bytecode compiler.
@@ -122,17 +136,15 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
 
     # Validate the stack.
     if sys.version_info[0:2] > (3, 3):
-        try:
-            stack_size = _simulate_stack(dis._get_instructions_bytes(
-                bc, constants=consts, names=names, varnames=varnames)
-            )
-        except CompileError as e:
-            print("Disassembly:")
-            dis.dis(bc)
-            raise e
+        stack_size = _simulate_stack(dis._get_instructions_bytes(
+            bc, constants=consts, names=names, varnames=varnames)
+        )
     else:
         warnings.warn("Cannot check stack for safety. Your functions may segfault.")
         stack_size = 99
+
+    # Generate optimization warnings.
+    _optimize_warn_pass(dis._get_instructions_bytes(bc, constants=consts, names=names, varnames=varnames))
 
     obb = types.CodeType(
         arg_count,  # Varnames - used for arguments.
