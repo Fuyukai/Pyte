@@ -22,7 +22,7 @@ class FOR_LOOP(_PyteOp):
         """
 
         self.iterator = iterator
-        self._body = body
+        self._body = list(util.flatten(body))
 
     def to_bytes(self, previous: bytes):
         # Calculations ahead.

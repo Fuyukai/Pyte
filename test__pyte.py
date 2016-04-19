@@ -377,7 +377,6 @@ def test_func_with_args():
     assert func(1) == 1
 
 
-@pytest.mark.skipif(sys.version_info[0:2] < (3, 5), reason="*starred expressions don't work on <Py3.5")
 def test_for_loop():
     consts = pyte.create_consts(1, 2, 3)
     varnames = pyte.create_varnames("sl", "x")
@@ -392,7 +391,7 @@ def test_for_loop():
             body=[
                 # store iterated temp
                 pyte.ops.STORE_FAST(varnames[1]),
-                *(pyte.ops.LOAD_FAST(varnames[0]).attr(names[0])),
+                pyte.ops.LOAD_FAST(varnames[0]).attr(names[0]),
                 pyte.ops.LOAD_FAST(varnames[1]),
                 pyte.tokens.CALL_FUNCTION, struct.pack("<H", 1),  # Manual call function, non-validated.
                 pyte.tokens.POP_TOP,
