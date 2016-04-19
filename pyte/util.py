@@ -5,6 +5,7 @@ import collections
 import dis
 
 from . import tokens
+import pyte
 
 
 def generate_simple_call(opcode, index):
@@ -12,18 +13,22 @@ def generate_simple_call(opcode, index):
     # add the opcode
     bs += opcode.to_bytes(1, byteorder="little")
     # Add the index
-    bs += index.to_bytes(2, byteorder="little")
+    if isinstance(index, int):
+        bs += index.to_bytes(2, byteorder="little")
+    else:
+        bs += index
     # return it
     return bs
 
 
 def generate_bytecode_from_obb(obb: object, previous: bytes) -> bytes:
     # Generates bytecode from a specified object, be it a validator or an int or bytes even.
-    if obb.__class__.__name__ in ["_PyteOp", "_BuildList", "_BuildTuple"]:
+    if isinstance(obb, pyte.superclasses._PyteOp):
         return obb.to_bytes(previous)
-    elif obb.__class__.__name__ in ["_PyteAugmentedComparator", "_FakeMathematicalOP"]:
+    elif isinstance(obb, (pyte.superclasses._PyteAugmentedComparator,
+                          pyte.superclasses._PyteAugmentedValidator._FakeMathematicalOP)):
         return obb.to_bytes(previous)
-    elif obb.__class__.__name__ in ["_PyteAugmentedValidator"]:
+    elif isinstance(obb, pyte.superclasses._PyteAugmentedValidator):
         obb.validate()
         return obb.to_load()
     elif isinstance(obb, int):

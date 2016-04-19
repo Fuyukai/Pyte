@@ -6,6 +6,7 @@ from .call import CALL_FUNCTION
 from .store import STORE_FAST
 from .load import LOAD_FAST, LOAD_CONST, LOAD_ATTR
 from .if_ import IF
+from .for_ import FOR_LOOP
 
 from .builders import LIST
 

@@ -2,6 +2,7 @@
 Test suite for Pyte.
 """
 import dis
+import struct
 import types
 
 import pytest as pytest
@@ -374,3 +375,32 @@ def test_func_with_args():
     func = pyte.compile(instructions, [], names=[], varnames=varnames, arg_count=1)
 
     assert func(1) == 1
+
+
+@pytest.mark.skipif(sys.version_info[0:2] < (3, 5), reason="*starred expressions don't work on <Py3.5")
+def test_for_loop():
+    consts = pyte.create_consts(1, 2, 3)
+    varnames = pyte.create_varnames("sl", "x")
+    names = pyte.create_names("append")
+
+    instructions = [
+        # Create a list
+        pyte.ops.LIST(),
+        pyte.ops.STORE_FAST(varnames[0]),
+        pyte.ops.FOR_LOOP(
+            iterator=pyte.ops.LIST(consts[0], consts[1], consts[2]),
+            body=[
+                # store iterated temp
+                pyte.ops.STORE_FAST(varnames[1]),
+                *(pyte.ops.LOAD_FAST(varnames[0]).attr(names[0])),
+                pyte.ops.LOAD_FAST(varnames[1]),
+                pyte.tokens.CALL_FUNCTION, struct.pack("<H", 1),  # Manual call function, non-validated.
+                pyte.tokens.POP_TOP,
+            ]
+        ),
+        pyte.ops.END_FUNCTION(varnames[0])
+    ]
+
+    func = pyte.compile(instructions, consts, names=names, varnames=varnames)
+
+    return func
