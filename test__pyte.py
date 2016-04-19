@@ -402,4 +402,4 @@ def test_for_loop():
 
     func = pyte.compile(instructions, consts, names=names, varnames=varnames)
 
-    return func
+    assert func() == [1, 2, 3]
