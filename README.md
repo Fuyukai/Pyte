@@ -6,6 +6,4 @@
 
 [![license](https://img.shields.io/github/license/SunDwarf/Pyte.svg?maxAge=2592000)](https://github.com/SunDwarf/Pyte)
 
-*Pyte* is a way to write Python bytecode more easily.
-
-It includes validators, and an object-oriented way to generate the bytecode.
+Read the docs at https://pyte.veriny.tf/
