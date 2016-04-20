@@ -38,7 +38,7 @@ def _compile_bc(code: list) -> bytes:
 
     return bc
 
-
+# TODO: Backport to <3.3
 def _simulate_stack(code: list) -> int:
     """
     Simulates the actions of the stack, to check safety.
@@ -134,17 +134,19 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
 
     frame_data = inspect.stack()[1]
 
-    # Validate the stack.
     if sys.version_info[0:2] > (3, 3):
+        # Validate the stack.
         stack_size = _simulate_stack(dis._get_instructions_bytes(
             bc, constants=consts, names=names, varnames=varnames)
         )
     else:
-        warnings.warn("Cannot check stack for safety. Your functions may segfault.")
+        warnings.warn("Cannot check stack for safety.")
         stack_size = 99
+
 
     # Generate optimization warnings.
     _optimize_warn_pass(dis._get_instructions_bytes(bc, constants=consts, names=names, varnames=varnames))
+
 
     obb = types.CodeType(
         arg_count,  # Varnames - used for arguments.

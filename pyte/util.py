@@ -4,6 +4,8 @@ Miscellaneous utilities.
 import collections
 import dis
 
+import sys
+
 from . import tokens
 import pyte
 
@@ -63,6 +65,8 @@ def flatten(l):
         else:
             yield el
 
+# "fixed" functions
+
 def _get_name_info(name_index, name_list):
     """Helper to get optional details about named references
 
@@ -82,3 +86,8 @@ def _get_name_info(name_index, name_list):
     return argval, argrepr
 
 dis._get_name_info = _get_name_info
+
+
+if sys.version_info[0:2] < (3, 4):
+    from pyte import backports
+    backports.apply()
