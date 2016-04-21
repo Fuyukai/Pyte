@@ -76,7 +76,29 @@ class CALL_FUNCTION(_PyteOp):
         if not self._store_list:
             pass
         else:
-            # Misleading name, we use STORE_FAST, not a load call.
             bc += util.generate_simple_call(tokens.STORE_FAST, self._store_list.index)
         return bc
 
+
+class CALL_SIMPLE(_PyteOp):
+    """
+    Unlike CALL_FUNCTION, this allows a very simple call.
+
+    It doesn't load anything, rather, it just constructs the correct CALL_FUNCTION call.
+    """
+
+    def __init__(self, arg_count: int, kwargcount: int=0):
+        self._args = arg_count
+        self._kwargs = kwargcount
+
+    def to_bytes(self, previous: bytes):
+        # Incredibly simple, compared to CALL_FUNCTION.
+        bc = b""
+        bc += tokens.CALL_FUNCTION.to_bytes(1, byteorder="little")
+
+        # Set the low byte.
+        bc += self._args.to_bytes(1, byteorder="little")
+        # Set the high byte.
+        bc += self._kwargs.to_bytes(1, byteorder="little")
+
+        return bc

@@ -1,9 +1,7 @@
 """
 Basic operations.
 """
-import types
-
-from .call import CALL_FUNCTION
+from .call import CALL_FUNCTION, CALL_SIMPLE
 from .store import STORE_FAST
 from .load import LOAD_FAST, LOAD_CONST, LOAD_ATTR, LOAD_GLOBAL
 from .if_ import IF

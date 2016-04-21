@@ -88,9 +88,9 @@ class _BuildSet(_Builder):
             pyte.ops.LOAD_GLOBAL(names[5]),
             # Call list(self.args)
             pyte.ops.LOAD_FAST(varnames[0]).attr(names[6]),
-            pyte.tokens.CALL_FUNCTION, struct.pack("<H", 1),
+            pyte.ops.CALL_SIMPLE(1),
             # Call len(^)
-            pyte.tokens.CALL_FUNCTION, struct.pack("<H", 1),
+            pyte.ops.CALL_SIMPLE(1),
             # Call .to_bytes
             pyte.ops.LOAD_ATTR(names[3]),
             pyte.ops.CALL_FUNCTION(None, consts[1], consts[2]),
