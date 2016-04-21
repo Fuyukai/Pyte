@@ -403,3 +403,29 @@ def test_for_loop():
     func = pyte.compile(instructions, consts, names=names, varnames=varnames)
 
     assert func() == [1, 2, 3]
+
+
+def test_for_with_if():
+    consts = pyte.create_consts(1, 2, 3)
+
+    instructions = [
+        pyte.ops.FOR_LOOP(
+            iterator=pyte.ops.LIST(consts[0]),
+            body=[
+                pyte.ops.IF(
+                    conditions=[consts[1] < consts[2]],
+                    body=[
+                        [
+                            pyte.ops.LOAD_CONST(consts[1]),
+                            pyte.tokens.RETURN_VALUE
+                        ]
+                    ]
+                )
+            ]
+        ),
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, names=[], varnames=[])
+
+    assert func() == 2
