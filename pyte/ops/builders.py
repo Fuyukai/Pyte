@@ -89,7 +89,7 @@ def _bootstrap_build_set():
         pyte.tokens.BINARY_ADD,
         # Add the len(list(self.args))
         pyte.ops.LOAD_GLOBAL(names[4]),
-        pyte.ops.LOAD_GLOBAL(names[5]).attr(names[6]),
+        pyte.ops.LOAD_GLOBAL(names[5]),
         # Call list(self.args)
         pyte.ops.LOAD_FAST(varnames[0]).attr(names[6]),
         pyte.tokens.CALL_FUNCTION, struct.pack("<H", 1),
