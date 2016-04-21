@@ -6,7 +6,6 @@ import dis
 
 import sys
 
-from pyte import superclasses
 from . import tokens
 import pyte
 
@@ -68,20 +67,6 @@ def flatten(l):
 
 
 # "fixed" functions
-
-
-def _create_validated(*args, name) -> superclasses.PyteAugmentedArgList:
-    return superclasses.PyteAugmentedArgList(args, name=name)
-
-def create_names(*args) -> superclasses.PyteAugmentedArgList:
-    return _create_validated(*args, name="names")
-
-def create_consts(*args) -> superclasses.PyteAugmentedArgList:
-    return _create_validated(*args, name="consts")
-
-def create_varnames(*args) -> superclasses.PyteAugmentedArgList:
-    return _create_validated(*args, name="varnames")
-
 
 
 def _get_name_info(name_index, name_list):

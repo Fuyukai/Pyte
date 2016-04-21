@@ -9,19 +9,13 @@ from .load import LOAD_FAST, LOAD_CONST, LOAD_ATTR, LOAD_GLOBAL
 from .if_ import IF
 from .for_ import FOR_LOOP
 
-from . import builders
+from .builders import LIST, TUPLE, SET
 
 # Shortcut operation for LOAD_CONST[0] and RETURN_VALUE.
 from pyte import util
 from pyte import tokens
 from pyte.exc import CompileError, ValidationError
 from pyte.superclasses import _PyteOp, _PyteAugmentedValidator
-
-def bootstrap():
-    # Fix up bootstrapped functions.
-    _bs_boot = builders._bootstrap_build_set()
-    builders._BuildSet.to_bytes = _bs_boot
-
 
 class END_FUNCTION(_PyteOp):
     def to_bytes(self, previous):
