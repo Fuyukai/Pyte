@@ -3,7 +3,7 @@ Load ops
 """
 from pyte.exc import ValidationError
 from pyte.superclasses import _PyteOp, _PyteAugmentedValidator
-from pyte import tokens
+from pyte import tokens, util
 
 
 class _LoadOPSuper(object):
@@ -59,13 +59,52 @@ class _LoadOPSuper(object):
                 Creates an inline LOAD_ATTR call, using a validator.
                 """
                 # Use the __override_opcode param and __override_list_restriction
-                return self, self.__class__(attr, tokens.LOAD_ATTR, "names")
+                return _AttrLoader(self, attr)
 
         outer_self._fake_class = _FakeInnerOP
 
     def __call__(self, arg):
         # Create a _FakeInnerOP.
         return self._fake_class(arg)
+
+
+class _AttrLoader(_PyteOp):
+    """
+    Custom class for a LOAD_ATTR call.
+
+    Allows chained .attr calls.
+    """
+
+    def __init__(self, item: _PyteAugmentedValidator, first_attr):
+        # This should be the original item to LOAD_FAST/_NAME/_GLOBAL or whatever.
+        self.item = item
+
+        # Attrs.
+        self._attrs = [first_attr]
+
+    def to_bytes(self, previous: bytes):
+        bc = b""
+        # Add the LOAD_ call.
+        bc += util.generate_bytecode_from_obb(self.item, b"")
+        # Add the attribute calls.
+        for attr in self._attrs:
+            try:
+                assert isinstance(attr, _PyteAugmentedValidator)
+            except AssertionError:
+                raise ValidationError("LOAD_ATTR call was not a _PyteAugmentedValidator object") from None
+
+            # Generate a LOAD_ATTR call
+            attr.validate()
+            bc += util.generate_simple_call(tokens.LOAD_ATTR, attr.index)
+
+        return bc
+
+    def attr(self, item: _PyteAugmentedValidator):
+        """
+        Add an attribute to the chain of attributes to load.
+        """
+        self._attrs.append(item)
+        return self
 
 
 # Define the LOAD_ operators.

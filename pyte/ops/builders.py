@@ -78,8 +78,7 @@ class _BuildSet(_Builder):
             pyte.ops.LOAD_FAST(varnames[0]).attr(names[0]),
             pyte.ops.CALL_FUNCTION(None, varnames[1]),
             # Load tokens.MAP.to_bytes
-            pyte.ops.LOAD_GLOBAL(names[1]).attr(names[2]),
-            pyte.ops.LOAD_ATTR(names[3]),
+            pyte.ops.LOAD_GLOBAL(names[1]).attr(names[2]).attr(names[3]),
             # Call to_bytes on BUILD_SET
             pyte.ops.CALL_FUNCTION(None, consts[0], consts[2]),
             # Add it together.
