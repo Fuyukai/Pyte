@@ -1,9 +1,12 @@
 """
 BUILD_ tokens.
 """
+import struct
+
 from pyte.exc import ValidationError
 from pyte.superclasses import _PyteOp, _PyteAugmentedValidator
 from pyte import tokens, util
+import pyte
 
 
 class _Builder(_PyteOp):
@@ -59,6 +62,52 @@ class _BuildTuple(_Builder):
         # If we should store, add a STORE_FAST instruction
         bc += self._should_store()
         return bc
+
+
+class _BuildSet(_Builder):
+    pass
+
+# Bytecode version of _BuildSet
+
+
+def _bootstrap_build_set():
+    varnames = pyte.create_varnames("self", "previous", "bc")
+    consts = pyte.create_consts(1, 2, "little")
+    names = pyte.create_names("_to_bytes_basic", "tokens", "BUILD_SET", "to_bytes", "len", "list", "args",
+                              "_should_store")
+
+    instructions = [
+        # First, call _to_bytes_basic
+        pyte.ops.LOAD_FAST(varnames[0]).attr(names[0]),
+        pyte.ops.CALL_FUNCTION(None, varnames[1]),
+        # Load tokens.MAP.to_bytes
+        pyte.ops.LOAD_GLOBAL(names[1]).attr(names[2]),
+        pyte.ops.LOAD_ATTR(names[3]),
+        # Call to_bytes on BUILD_SET
+        pyte.ops.CALL_FUNCTION(None, consts[0], consts[2]),
+        # Add it together.
+        pyte.tokens.BINARY_ADD,
+        # Add the len(list(self.args))
+        pyte.ops.LOAD_GLOBAL(names[4]),
+        pyte.ops.LOAD_GLOBAL(names[5]).attr(names[6]),
+        # Call list(self.args)
+        pyte.ops.LOAD_FAST(varnames[0]).attr(names[6]),
+        pyte.tokens.CALL_FUNCTION, struct.pack("<H", 1),
+        # Call len(^)
+        pyte.tokens.CALL_FUNCTION, struct.pack("<H", 1),
+        # Call .to_bytes
+        pyte.ops.LOAD_ATTR(names[3]),
+        pyte.ops.CALL_FUNCTION(None, consts[1], consts[2]),
+        # Add it to bc
+        pyte.tokens.BINARY_ADD,
+        # Return
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts=consts, varnames=varnames, names=names,
+                        arg_count=2, func_name="to_bytes")
+
+    return func
 
 LIST = _BuildList
 TUPLE = _BuildTuple

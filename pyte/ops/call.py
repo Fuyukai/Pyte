@@ -17,9 +17,9 @@ class CALL_FUNCTION(_PyteOp):
 
     def __init__(self, function, *args, store_return=None):
         # Set the function
-        self.fun = function
+        self.fun = function if function else None
         # TODO: Varargs.
-        self.args = args
+        self.args = list(util.flatten(args))
 
         # Should we store on return?
         if store_return:
@@ -37,14 +37,16 @@ class CALL_FUNCTION(_PyteOp):
         arg_count = len(self.args)
         bc = b""
         # Add the load_global call to load the function
-        if not isinstance(self.fun, _PyteAugmentedValidator):
-            raise ValidationError("Function to call must be inside names")
-        # Get the function index
-        self.fun.validate()
-        f_index = self.fun.index
-        # Generate a LOAD_GLOBAL call
-        l_g = util.generate_load_global(f_index)
-        bc += l_g
+        if self.fun:
+            if not isinstance(self.fun, _PyteAugmentedValidator):
+                raise ValidationError("Function to call must be inside names")
+            # Get the function index
+            self.fun.validate()
+            f_index = self.fun.index
+            # Generate a LOAD_GLOBAL call
+            l_g = util.generate_load_global(f_index)
+            bc += l_g
+        # assume it's on the stack already, otherwise
         # Iterate over.
         for arg in self.args:
             try:
@@ -72,7 +74,7 @@ class CALL_FUNCTION(_PyteOp):
 
         # Check if we should store the response.
         if not self._store_list:
-            bc += tokens.POP_TOP.to_bytes(1, byteorder="little")
+            pass
         else:
             # Misleading name, we use STORE_FAST, not a load call.
             bc += util.generate_simple_call(tokens.STORE_FAST, self._store_list.index)

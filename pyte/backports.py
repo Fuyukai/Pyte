@@ -57,8 +57,6 @@ class Instruction(_Instruction):
 
 def _get_instructions_bytes(code, varnames=None, names=None, constants=None,
                             cells=None, linestarts=None, line_offset=0):
-
-
     """Iterate over the instructions in a bytecode string.
 
     Generates a sequence of Instruction namedtuples giving the details of each
@@ -115,8 +113,9 @@ def _get_instructions_bytes(code, varnames=None, names=None, constants=None,
             elif op in dis.hasnargs:
                 argrepr = "%d positional, %d keyword pair" % (code[i - 2], code[i - 1])
         yield dis.Instruction(dis.opname[op], op,
-                          arg, argval, argrepr,
-                          offset, starts_line, is_jump_target)
+                              arg, argval, argrepr,
+                              offset, starts_line, is_jump_target)
+
 
 def _get_const_info(const_index, const_list):
     """Helper to get optional details about const references

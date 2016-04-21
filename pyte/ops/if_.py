@@ -4,7 +4,7 @@ This is horrible code, that detects jumps.
 You have been warned.
 """
 from pyte import exc, tokens
-from pyte.compiler import _compile_bc
+from pyte import compiler
 from pyte.superclasses import _PyteOp, _PyteAugmentedValidator
 from pyte.util import generate_simple_call
 
@@ -67,7 +67,7 @@ class IF(_PyteOp):
             # call that checks for the opposite of the above IF.
 
             # Call the _compile_func method from compiler to compile the body.
-            body_bc = _compile_bc(body)
+            body_bc = compiler._compile_bc(body)
 
             bdyl = len(body_bc)
             # Add together the lengths.

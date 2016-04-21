@@ -6,6 +6,7 @@ import dis
 
 import sys
 
+from pyte import superclasses
 from . import tokens
 import pyte
 
@@ -65,7 +66,23 @@ def flatten(l):
         else:
             yield el
 
+
 # "fixed" functions
+
+
+def _create_validated(*args, name) -> superclasses.PyteAugmentedArgList:
+    return superclasses.PyteAugmentedArgList(args, name=name)
+
+def create_names(*args) -> superclasses.PyteAugmentedArgList:
+    return _create_validated(*args, name="names")
+
+def create_consts(*args) -> superclasses.PyteAugmentedArgList:
+    return _create_validated(*args, name="consts")
+
+def create_varnames(*args) -> superclasses.PyteAugmentedArgList:
+    return _create_validated(*args, name="varnames")
+
+
 
 def _get_name_info(name_index, name_list):
     """Helper to get optional details about named references
@@ -85,9 +102,10 @@ def _get_name_info(name_index, name_list):
         argrepr = repr(argval)
     return argval, argrepr
 
-dis._get_name_info = _get_name_info
 
+dis._get_name_info = _get_name_info
 
 if sys.version_info[0:2] < (3, 4):
     from pyte import backports
+
     backports.apply()

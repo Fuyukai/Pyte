@@ -68,8 +68,8 @@ class _LoadOPSuper(object):
         return self._fake_class(arg)
 
 
-
 # Define the LOAD_ operators.
 LOAD_FAST = _LoadOPSuper(tokens.LOAD_FAST, "varnames")
 LOAD_CONST = _LoadOPSuper(tokens.LOAD_CONST, "consts")
 LOAD_ATTR = _LoadOPSuper(tokens.LOAD_ATTR, "names")
+LOAD_GLOBAL = _LoadOPSuper(tokens.LOAD_GLOBAL, "names")

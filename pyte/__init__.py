@@ -33,3 +33,5 @@ def create_consts(*args) -> superclasses.PyteAugmentedArgList:
 
 def create_varnames(*args) -> superclasses.PyteAugmentedArgList:
     return _create_validated(*args, name="varnames")
+
+ops.bootstrap()
