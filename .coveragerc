@@ -1,2 +1,3 @@
 [report]
-omit = *tokens_*
+omit =  *tokens_*
+		pyte/backports.py

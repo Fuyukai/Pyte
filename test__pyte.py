@@ -429,3 +429,68 @@ def test_for_with_if():
     func = pyte.compile(instructions, consts, names=[], varnames=[])
 
     assert func() == 2
+
+
+def test_modulo():
+    consts = pyte.create_consts(4, 2)
+
+    instructions = [
+        consts[0] % consts[1],
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, [], [])
+
+    assert func() == 0
+
+
+def test_bin_and():
+    consts = pyte.create_consts(7, 2)
+
+    instructions = [
+        consts[0] & consts[1],
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, [], [])
+
+    assert func() == 2
+
+
+def test_bin_or():
+    consts = pyte.create_consts(10, 4)
+
+    instructions = [
+        consts[0] | consts[1],
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, [], [])
+
+    assert func() == 14
+
+
+def test_bin_xor():
+    consts = pyte.create_consts(3, 1)
+
+    instructions = [
+        consts[0] ^ consts[1],
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, [], [])
+
+    assert func() == 2
+
+
+def test_built_set():
+    consts = pyte.create_consts(0, 1, 2)
+
+    instructions = [
+        pyte.ops.SET(consts[0], consts[1], consts[2]),
+        pyte.tokens.RETURN_VALUE
+    ]
+
+    func = pyte.compile(instructions, consts, [], [])
+
+    assert func() == {0, 1, 2}

@@ -173,7 +173,31 @@ class _PyteAugmentedValidator(object):
     def __truediv__(self, other):
         return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_TRUE_DIVIDE)
 
-    # TODO: Don't pin these.
+    def __mod__(self, other):
+        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_MODULO)
+
+    # Bitwise
+    def __and__(self, other):
+        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_AND)
+
+    def __or__(self, other):
+        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_OR)
+
+    def __lshift__(self, other):
+        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_LSHIFT)
+
+    def __rshift__(self, other):
+        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_RSHIFT)
+
+    def __xor__(self, other):
+        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_XOR)
+
+    # 3.5 matrix multiple
+
+    def __matmul__(self, other):
+        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_MATRIX_MULTIPLY)
+
+    # Standard comparison ops
 
     def __eq__(self, other):
         return _PyteAugmentedComparator(BIN_OP_MAP["=="], self, other)
