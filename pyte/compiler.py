@@ -85,7 +85,8 @@ def _optimize_warn_pass(bc: list):
                 warnings.warn("STORE_FAST call followed by LOAD_FAST call has no effect")
 
 
-def compile(code: list, consts: list, names: list, varnames: list, func_name: str = "<unknown, compiled>", arg_count=0):
+def compile(code: list, consts: list, names: list, varnames: list, func_name: str = "<unknown, compiled>",
+            arg_count=0, kwarg_defaults=()):
     """
     Compiles a set of bytecode instructions into a working function, using Python's bytecode compiler.
 
@@ -110,6 +111,10 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
 
         arg_count: int
             The number of arguments to have. This must be less than or equal to the number of varnames.
+
+        kwarg_defaults: tuple
+            A tuple of defaults for keyword arguments.
+
     """
     varnames = tuple(varnames)
     consts = tuple(consts)
@@ -120,6 +125,9 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
 
     if arg_count > len(varnames):
         raise CompileError("arg_count > len(varnames)")
+
+    if len(kwarg_defaults) > len(varnames):
+        raise CompileError("len(kwarg_defaults) > len(varnames)")
 
     # Compile it.
     bc = _compile_bc(code)
@@ -152,7 +160,7 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
         arg_count,  # Varnames - used for arguments.
         0,  # Kwargs are not supported yet
         len(varnames),  # co_nlocals -> Non-argument local variables
-        stack_size,  # Use 10 by default. TODO: up this dynamically
+        stack_size,  # Auto-calculated
         flags,  # 67 is default for a normal function.
         bc,  # co_code - use the bytecode we generated.
         consts,  # co_consts
@@ -171,6 +179,7 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
     # Create a function type.
     f = types.FunctionType(obb, f_globals)
     f.__name__ = func_name
+    f.__defaults__ = kwarg_defaults
 
     # return the func
     return f
