@@ -38,6 +38,7 @@ def _compile_bc(code: list) -> bytes:
 
     return bc
 
+
 # TODO: Backport to <3.3
 def _simulate_stack(code: list) -> int:
     """
@@ -59,9 +60,15 @@ def _simulate_stack(code: list) -> int:
     for instruction in code:
         assert isinstance(instruction, dis.Instruction)
         if instruction.arg is not None:
-            effect = dis.stack_effect(instruction.opcode, instruction.arg)
+            try:
+                effect = dis.stack_effect(instruction.opcode, instruction.arg)
+            except ValueError as e:
+                raise CompileError("Invalid opcode `{}` when compiling".format(instruction.opcode)) from e
         else:
-            effect = dis.stack_effect(instruction.opcode)
+            try:
+                effect = dis.stack_effect(instruction.opcode)
+            except ValueError as e:
+                raise CompileError("Invalid opcode `{}` when compiling".format(instruction.opcode)) from e
         curr_stack += effect
         # Re-check the stack.
         _should_new_stack = _check_stack(instruction)
@@ -151,10 +158,8 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
         warnings.warn("Cannot check stack for safety.")
         stack_size = 99
 
-
     # Generate optimization warnings.
     _optimize_warn_pass(dis._get_instructions_bytes(bc, constants=consts, names=names, varnames=varnames))
-
 
     obb = types.CodeType(
         arg_count,  # Varnames - used for arguments.

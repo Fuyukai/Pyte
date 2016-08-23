@@ -15,6 +15,7 @@ from pyte import tokens
 from pyte.exc import CompileError, ValidationError
 from pyte.superclasses import _PyteOp, _PyteAugmentedValidator
 
+
 class END_FUNCTION(_PyteOp):
     def to_bytes(self, previous):
         bc = b""
