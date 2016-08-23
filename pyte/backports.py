@@ -117,20 +117,6 @@ def _get_instructions_bytes(code, varnames=None, names=None, constants=None,
                               offset, starts_line, is_jump_target)
 
 
-def _get_const_info(const_index, const_list):
-    """Helper to get optional details about const references
-
-       Returns the dereferenced constant and its repr if the constant
-       list is defined.
-       Otherwise returns the constant index and its repr().
-    """
-    argval = const_index
-    if const_list is not None:
-        argval = const_list[const_index]
-    return argval, repr(argval)
-
-
 def apply():
     dis._get_instructions_bytes = _get_instructions_bytes
     dis.Instruction = Instruction
-    dis._get_const_info = _get_const_info

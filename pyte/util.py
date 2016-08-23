@@ -6,8 +6,11 @@ import dis
 
 import sys
 
+from pyte.exc import ValidationError
 from . import tokens
 import pyte
+
+PY36 = sys.version_info[0:2] >= (3, 6)
 
 
 def generate_simple_call(opcode, index):
@@ -16,7 +19,10 @@ def generate_simple_call(opcode, index):
     bs += opcode.to_bytes(1, byteorder="little")
     # Add the index
     if isinstance(index, int):
-        bs += index.to_bytes(2, byteorder="little")
+        if PY36:
+            bs += index.to_bytes(1, byteorder="little")
+        else:
+            bs += index.to_bytes(2, byteorder="little")
     else:
         bs += index
     # return it
@@ -68,6 +74,21 @@ def flatten(l):
 
 # "fixed" functions
 
+def _get_const_info(const_index, const_list):
+    """Helper to get optional details about const references
+
+       Returns the dereferenced constant and its repr if the constant
+       list is defined.
+       Otherwise returns the constant index and its repr().
+    """
+    argval = const_index
+    if const_list is not None:
+        try:
+            argval = const_list[const_index]
+        except IndexError:
+            raise ValidationError("Consts value out of range: {}".format(const_index))
+    return argval, repr(argval)
+
 
 def _get_name_info(name_index, name_list):
     """Helper to get optional details about named references
@@ -81,13 +102,14 @@ def _get_name_info(name_index, name_list):
         try:
             argval = name_list[name_index]
         except IndexError:
-            return "(unknown)", "(unknown)"
+            raise ValidationError("Names value out of range: {}".format(name_index))
         argrepr = argval
     else:
         argrepr = repr(argval)
     return argval, argrepr
 
 
+dis._get_const_info = _get_const_info
 dis._get_name_info = _get_name_info
 
 if sys.version_info[0:2] < (3, 4):

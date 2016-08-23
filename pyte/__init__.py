@@ -12,6 +12,10 @@ elif sys.version_info[1] == 4:
     from . import tokens_34 as tokens
 elif sys.version_info[1] == 5:
     from . import tokens_35 as tokens
+elif sys.version_info[1] == 6:
+    from . import tokens_36 as tokens
+else:
+    raise SystemError("This version of Python is not supported")
 
 from .compiler import compile
 from . import superclasses
