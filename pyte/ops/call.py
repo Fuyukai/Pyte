@@ -6,6 +6,7 @@ This does a bit of optimizing out, and makes it nicer to run than manually LOAD_
 from pyte.exc import ValidationError
 from pyte.superclasses import _PyteOp, _PyteAugmentedValidator
 from pyte import util, tokens
+from pyte.util import PY36
 
 
 class CALL_FUNCTION(_PyteOp):
@@ -27,7 +28,7 @@ class CALL_FUNCTION(_PyteOp):
         else:
             self._store_list = False
 
-    def to_bytes(self, previois) -> bytes:
+    def to_bytes(self, previous) -> bytes:
         # Warning: Complex code ahead!
         # A brief explaination:
         # 1) We example self.args to check what we should load.
@@ -69,8 +70,10 @@ class CALL_FUNCTION(_PyteOp):
         bc += tokens.CALL_FUNCTION.to_bytes(1, byteorder="little")
         # Set the low byte.
         bc += arg_count.to_bytes(1, byteorder="little")
-        # Set the high byte.
-        bc += b"\x00"
+        if not PY36:
+            # Set the high byte.
+            # In Python 3.6, this is handled with an EXTENDED_ARGS, I guess.
+            bc += b"\x00"
 
         # Check if we should store the response.
         if not self._store_list:

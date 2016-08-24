@@ -4,6 +4,7 @@ Load ops
 from pyte.exc import ValidationError
 from pyte.superclasses import _PyteOp, _PyteAugmentedValidator
 from pyte import tokens, util
+from pyte.util import PY36
 
 
 class _LoadOPSuper(object):
@@ -50,8 +51,9 @@ class _LoadOPSuper(object):
                 # Convert var into bytestring
                 b_var = var.to_bytes(1, byteorder="little")
                 byte_string += b_var
-                # Add a \x00 to the edge
-                byte_string += b"\x00"
+                if not PY36:
+                    # Add a \x00 to the edge
+                    byte_string += b"\x00"
                 return byte_string
 
             def attr(self, attr: _PyteAugmentedValidator):
