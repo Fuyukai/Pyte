@@ -1,7 +1,9 @@
 """
 Compiles python bytecode using `types.FunctionType`.
 """
+import contextlib
 import dis
+import io
 
 import sys
 import warnings
@@ -12,6 +14,8 @@ from pyte.superclasses import _PyteOp, _PyteAugmentedComparator
 from pyte.exc import CompileError
 import inspect
 import types
+
+from pyte.util import PY36, ensure_instruction
 
 
 def _compile_bc(code: list) -> bytes:
@@ -93,7 +97,7 @@ def _optimize_warn_pass(bc: list):
 
 
 def compile(code: list, consts: list, names: list, varnames: list, func_name: str = "<unknown, compiled>",
-            arg_count=0, kwarg_defaults=()):
+            arg_count=0, kwarg_defaults=(), use_safety_wrapper: bool = True):
     """
     Compiles a set of bytecode instructions into a working function, using Python's bytecode compiler.
 
@@ -122,6 +126,11 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
         kwarg_defaults: tuple
             A tuple of defaults for keyword arguments.
 
+        use_safety_wrapper: bool
+            Use a safety wrapper?
+            This re-writes SystemError exceptions with an `invalid opcode` command to print a detailed bytecode
+            dissection of the bad function.
+
     """
     varnames = tuple(varnames)
     consts = tuple(consts)
@@ -140,9 +149,14 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
     bc = _compile_bc(code)
 
     # Check for a final RETURN_VALUE.
-    if bc[-1] != tokens.RETURN_VALUE:
-        raise CompileError("No default RETURN_VALUE. Add a `pyte.tokens.RETURN_VALUE` to the end of your bytecode if "
-                           "you don't need one.")
+    if PY36:
+        # TODO: Add Python 3.6 check
+        pass
+    else:
+        if bc[-1] != tokens.RETURN_VALUE:
+            raise CompileError(
+                "No default RETURN_VALUE. Add a `pyte.tokens.RETURN_VALUE` to the end of your bytecode if "
+                "you don't need one.")
 
     # Set default flags
     flags = 1 | 2 | 64
@@ -186,5 +200,29 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
     f.__name__ = func_name
     f.__defaults__ = kwarg_defaults
 
+    if use_safety_wrapper:
+        def __safety_wrapper(*args, **kwargs):
+            try:
+                return f(*args, **kwargs)
+            except SystemError as e:
+                if 'opcode' not in ' '.join(e.args):
+                    # Re-raise any non opcode related errors.
+                    raise
+                msg = "Bytecode exception!\nFunction {} returned an invalid opcode.\nFunction dissection:\n\n".format(
+                    f.__name__
+                )
+                # dis sucks and always prints to stdout
+                # so we capture it
+                file = io.StringIO()
+                with contextlib.redirect_stdout(file):
+                    dis.dis(f)
+                msg += file.getvalue()
+                raise SystemError(msg) from e
+
+        returned_func = __safety_wrapper
+        returned_func.wrapped = f
+    else:
+        returned_func = f
+
     # return the func
-    return f
+    return returned_func
