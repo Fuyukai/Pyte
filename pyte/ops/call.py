@@ -102,6 +102,8 @@ class CALL_SIMPLE(_PyteOp):
         # Set the low byte.
         bc += self._args.to_bytes(1, byteorder="little")
         # Set the high byte.
-        bc += self._kwargs.to_bytes(1, byteorder="little")
+        if not PY36:
+            # no high byte, due to extended_args
+            bc += self._kwargs.to_bytes(1, byteorder="little")
 
         return bc

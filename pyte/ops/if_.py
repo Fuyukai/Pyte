@@ -71,7 +71,7 @@ class IF(_PyteOp):
 
             bdyl = len(body_bc)
             # Add together the lengths.
-            gen_len = prev_len + len(cond_bytecode) + bdyl + 3
+            gen_len = prev_len + len(cond_bytecode) + bdyl + 1
             # Generate the POP_JUMP_IF_FALSE instruction
             bc += generate_simple_call(tokens.POP_JUMP_IF_FALSE, gen_len)
             # Add the body_bc

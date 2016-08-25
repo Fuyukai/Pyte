@@ -8,6 +8,7 @@ from pyte.exc import ValidationError
 from pyte.superclasses import _PyteOp, _PyteAugmentedValidator
 from pyte import tokens, util
 import pyte
+from pyte.util import PY36, ensure_instruction
 
 
 class _Builder(_PyteOp):
@@ -48,7 +49,11 @@ class _BuildList(_Builder):
         bc = self._to_bytes_basic(previous)
         # Add a BUILD_LIST instruction
         bc += tokens.BUILD_LIST.to_bytes(1, byteorder="little")
-        bc += len(list(self.args)).to_bytes(2, byteorder="little")
+        # TODO: Extended args for Py3.6+
+        if PY36:
+            bc += len(list(self.args)).to_bytes(1, byteorder="little")
+        else:
+            bc += len(list(self.args)).to_bytes(2, byteorder="little")
         # If we should store, add a STORE_FAST instruction
         bc += self._should_store()
         return bc
@@ -59,7 +64,10 @@ class _BuildTuple(_Builder):
         bc = self._to_bytes_basic(previous)
         # Add a BUILD_TUPLE instruction
         bc += tokens.BUILD_TUPLE.to_bytes(1, byteorder="little")
-        bc += len(list(self.args)).to_bytes(2, byteorder="little")
+        if PY36:
+            bc += len(list(self.args)).to_bytes(1, byteorder="little")
+        else:
+            bc += len(list(self.args)).to_bytes(2, byteorder="little")
         # If we should store, add a STORE_FAST instruction
         bc += self._should_store()
         return bc
@@ -82,7 +90,7 @@ class _BuildSet(_Builder):
             # Call to_bytes on BUILD_SET
             pyte.ops.CALL_FUNCTION(None, consts[0], consts[2]),
             # Add it together.
-            pyte.tokens.BINARY_ADD,
+            ensure_instruction(pyte.tokens.BINARY_ADD),
             # Add the len(list(self.args))
             pyte.ops.LOAD_GLOBAL(names[4]),
             pyte.ops.LOAD_GLOBAL(names[5]),
@@ -95,7 +103,7 @@ class _BuildSet(_Builder):
             pyte.ops.LOAD_ATTR(names[3]),
             pyte.ops.CALL_FUNCTION(None, consts[1], consts[2]),
             # Add it to bc
-            pyte.tokens.BINARY_ADD,
+            ensure_instruction(pyte.tokens.BINARY_ADD),
             # Return
             pyte.tokens.RETURN_VALUE
         ]

@@ -10,7 +10,48 @@ from pyte.exc import ValidationError
 from . import tokens
 import pyte
 
+# Python 3.6 specific things.
+# Bytecode format changed in Py 3.6 slightly.
+# It's mostly the same, just shorter.
+# The most notable things:
+# All instructions are now 16-bit.
+# This makes life easier.
+# It also means all 'raw' ints have to be wrapped in an `ensure_instruction` function.
+
 PY36 = sys.version_info[0:2] >= (3, 6)
+
+
+def ensure_instruction(instruction: int):
+    """
+    Wraps an instruction to be Python 3.6+ compatible.
+
+    This does nothing on Python 3.5 and below.
+
+    This is most useful for operating on bare, single-width instructions such as ``RETURN_FUNCTION`` in a version
+    portable way.
+
+    :param instruction: The instruction integer to use.
+    :return: A safe bytes object, if applicable.
+    """
+    if PY36:
+        return instruction.to_bytes(2, byteorder="little")
+    else:
+        return instruction.to_bytes(1, byteorder="little")
+
+
+def pack_value(index: int) -> bytes:
+    """
+    Small helper value to pack an index value into bytecode.
+
+    This is used for version compat between 3.5- and 3.6+
+
+    :param index: The item to pack.
+    :return: The packed item.
+    """
+    if PY36:
+        return index.to_bytes(1, byteorder="little")
+    else:
+        return index.to_bytes(2, byteorder="little")
 
 
 def generate_simple_call(opcode, index):

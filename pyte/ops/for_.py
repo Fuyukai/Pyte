@@ -5,6 +5,7 @@ import collections
 
 from pyte import util, tokens
 from pyte.superclasses import _PyteOp, _PyteAugmentedValidator
+from pyte.util import PY36
 
 
 class FOR_LOOP(_PyteOp):
@@ -24,7 +25,11 @@ class FOR_LOOP(_PyteOp):
         self.iterator = iterator
         self._body = list(util.flatten(body))
 
-    def to_bytes(self, previous: bytes):
+    def to_bytes_35(self, previous: bytes):
+        """
+        A to-bytes specific to Python 3.5 and below.
+        """
+
         # Calculations ahead.
         bc = b""
 
@@ -62,3 +67,24 @@ class FOR_LOOP(_PyteOp):
         bc = util.generate_simple_call(tokens.SETUP_LOOP, prev_len + len(body_bc) - 6) + bc + body_bc
 
         return bc
+
+    def to_bytes_36(self, previous: bytes):
+        """
+        A to-bytes specific to Python 3.6 and above.
+        """
+        # Calculations ahead.
+        bc = b""
+
+        # Calculate the length of the iterator.
+        it_bc = util.generate_bytecode_from_obb(self.iterator, previous)
+        bc += it_bc
+
+        bc += util.ensure_instruction(tokens.GET_ITER)
+
+    def to_bytes(self, previous: bytes):
+        # Python 3.6 has slightly different behaviour
+        if PY36:
+            return self.to_bytes_36(previous)
+        else:
+            return self.to_bytes_35(previous)
+

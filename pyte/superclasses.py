@@ -9,6 +9,7 @@ from pyte import util
 
 import dis
 # Define operator map.
+from pyte.util import PY36
 
 BIN_OP_MAP = {}
 
@@ -65,7 +66,11 @@ class _PyteAugmentedComparator(object):
         # Add the CMP_OP
         bc += tokens.COMPARE_OP.to_bytes(1, byteorder="little")
         # Add the operator
-        bc += self.opcode.to_bytes(2, byteorder="little")
+        # In Py 3.6+ the operator is only one byte.
+        if PY36:
+            bc += self.opcode.to_bytes(1, byteorder="little")
+        else:
+            bc += self.opcode.to_bytes(2, byteorder="little")
         return bc
 
 
@@ -94,7 +99,11 @@ class _PyteAugmentedValidator(object):
                 bc += arg.to_load()
                 # Add a BINARY_* depending on if we are the first argument, or any more arguments.
                 if index != 0:
-                    bc += self.opcode.to_bytes(1, byteorder="little")
+                    size = 1
+                    if PY36:
+                        # py36 change: binary operators are now 2 bytes wide
+                        size = 2
+                    bc += self.opcode.to_bytes(size, byteorder="little")
             return bc
 
         def __append_args(self, other):

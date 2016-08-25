@@ -35,7 +35,7 @@ def test_compiler():
         instructions = [tokens.LOAD_CONST, 0, 0,
                         tokens.RETURN_VALUE]
 
-    func = pyte.compile(instructions, consts, [], [])
+    func = pyte.compile(instructions, consts, [], [], use_safety_wrapper=False)
     assert isinstance(func, types.FunctionType)
     assert func.__code__.co_consts == (None,)
 
@@ -187,7 +187,6 @@ def test_addition():
 
 
 def test_chained_addition():
-    return
     consts = pyte.create_consts(1, 2, 3)
 
     instructions = [
@@ -214,7 +213,6 @@ def test_subtraction():
 
 
 def test_chained_subtraction():
-    return
     consts = pyte.create_consts(3, 2, 1)
 
     instructions = [
@@ -241,7 +239,6 @@ def test_multiplication():
 
 
 def test_chained_multiplication():
-    return
     consts = pyte.create_consts(3, 2, 2)
 
     instructions = [

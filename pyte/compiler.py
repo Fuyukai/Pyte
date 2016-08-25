@@ -148,6 +148,8 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
     # Compile it.
     bc = _compile_bc(code)
 
+    dis.dis(bc)
+
     # Check for a final RETURN_VALUE.
     if PY36:
         # TODO: Add Python 3.6 check
