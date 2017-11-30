@@ -8,7 +8,6 @@ import io
 import sys
 import types
 import warnings
-from io import BytesIO
 from typing import Any, Tuple
 
 from pyte import tokens, util
@@ -24,7 +23,7 @@ def compile_bytecode(code: list) -> bytes:
     :param code: A list of objects to compile.
     :return: The computed bytecode.
     """
-    bc = BytesIO()
+    bc = b""
     for i, op in enumerate(code):
         try:
             # Get the bytecode.
@@ -36,13 +35,12 @@ def compile_bytecode(code: list) -> bytes:
                 bc_op = op
             else:
                 raise CompileError("Could not compile code of type {}".format(type(op)))
-            # Append it
-            bc.write(bc_op)
+            bc += bc_op
         except Exception as e:
             print("Fatal compiliation error on operator {i} ({op}).".format(i=i, op=op))
             raise e
 
-    return bc.getvalue()
+    return bc
 
 
 # TODO: Backport to <3.3
