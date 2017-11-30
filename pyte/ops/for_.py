@@ -1,17 +1,19 @@
-"""
-More complex than IF.
-"""
-import collections
-
-from pyte import util, tokens
-from pyte.superclasses import _PyteOp, _PyteAugmentedValidator
+from pyte import tokens, util
+from pyte.superclasses import _PyteAugmentedValidator, _PyteOp
 from pyte.util import PY36
 
 
 class FOR_LOOP(_PyteOp):
-    def __init__(self, iterator, body: list):
+    """
+    Represents a for loop.
+    """
+
+    def __init__(self, iterator: _PyteAugmentedValidator, body: list):
         """
-        Create a new FOR operator.
+        Represents a for operator.
+
+        :param iterator: A :class:`.PyteAugmentedValidator` that represents the iterable.
+        :param body: A list of instructions to execute on each loop.
 
         Parameters:
 

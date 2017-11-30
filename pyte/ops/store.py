@@ -1,14 +1,14 @@
 """
-STORE_FAST operation.
+Store operators.
 """
-from pyte import util, tokens
+from pyte import tokens, util
 from pyte.exc import CompileError, ValidationError
-from pyte.superclasses import _PyteOp, _PyteAugmentedValidator
+from pyte.superclasses import _PyteAugmentedValidator, _PyteOp
 
 
 class STORE_FAST(_PyteOp):
     """
-    This represents a STORE_FAST operation.
+    Represents a STORE_FAST operation.
     """
 
     def to_bytes(self, previous):

@@ -1,13 +1,12 @@
 """
 BUILD_ tokens.
 """
-import struct
 import types
 
-from pyte.exc import ValidationError
-from pyte.superclasses import _PyteOp, _PyteAugmentedValidator
-from pyte import tokens, util
 import pyte
+from pyte import tokens, util
+from pyte.exc import ValidationError
+from pyte.superclasses import _PyteAugmentedValidator, _PyteOp
 from pyte.util import PY36, ensure_instruction
 
 
@@ -32,7 +31,8 @@ class _Builder(_PyteOp):
         if self._to_store:
             # If we should store, store it.
             if not isinstance(self._to_store, _PyteAugmentedValidator):
-                raise ValidationError("Cannot save built structure to item of type `{}`".format(type(self._to_store)))
+                raise ValidationError("Cannot save built structure to item of type `{}`"
+                                      .format(type(self._to_store)))
             else:
                 # Validate it
                 self._to_store.validate()

@@ -1,14 +1,11 @@
 """
 Superclasses for various Pyte things.
 """
+import dis
 import functools
 
-from pyte import tokens
+from pyte import tokens, util
 from pyte.exc import ValidationError
-from pyte import util
-
-import dis
-# Define operator map.
 from pyte.util import PY36
 
 BIN_OP_MAP = {}
@@ -38,7 +35,8 @@ class _PyteOp(object):
 
 class _PyteAugmentedComparator(object):
     """
-    An augmented comparator is used for the IF statements, in order to generate the correct bytecode.
+    An augmented comparator is used for the IF statements, in order to generate the correct 
+    bytecode.
     """
 
     def __init__(self, opcode: int, first, second):
@@ -74,71 +72,77 @@ class _PyteAugmentedComparator(object):
         return bc
 
 
+class _FakeMathematicalOP(_PyteOp):
+    """
+    Represents a fake mathematical operation. These are returned from mathematical operations on 
+    Pyte objects, and can be used to create bytes from them automatically.
+    """
+
+    def __init__(self, *args, opcode: int = None):
+        super().__init__(*args)
+        if opcode is None:
+            # what
+            raise ValidationError("This should never happen")
+        self.opcode = opcode
+
+    def to_bytes(self, previous: bytes):
+        bc = b""
+        # Add together all of the args.
+        for index, arg in enumerate(self.args):
+            # Validate the arg.
+            arg.validate()
+            # Get the LOAD_ call.
+            bc += arg.to_load()
+            # Add a BINARY_* depending on if we are the first argument, or any more arguments.
+            if index != 0:
+                size = 1
+                if PY36:
+                    # py36 change: binary operators are now 2 bytes wide
+                    size = 2
+                bc += self.opcode.to_bytes(size, byteorder="little")
+        return bc
+
+    def __append_args(self, other):
+        if other.__class__.__name__ == "_PyteAugmentedValidator":
+            tmp_args = list(self.args)
+            tmp_args.append(other)
+            self.args = tuple(tmp_args)
+        else:
+            self.args = tuple(list(self.args) + list(other.args))
+        return self
+
+    def __add__(self, other):
+        if self.opcode != tokens.BINARY_ADD:
+            raise ValueError("Cannot add in non-add mode.")
+        return self.__append_args(other)
+
+    def __sub__(self, other):
+        if self.opcode != tokens.BINARY_SUBTRACT:
+            raise ValueError("Cannot subtract in non-sub mode.")
+        return self.__append_args(other)
+
+    def __mul__(self, other):
+        if self.opcode != tokens.BINARY_MULTIPLY:
+            raise ValueError("Cannot multiply in non-mul mode.")
+        return self.__append_args(other)
+
+    def __truediv__(self, other):
+        if self.opcode != tokens.BINARY_TRUE_DIVIDE:
+            raise ValueError("Cannot truediv in non-truediv mode.")
+        return self.__append_args(other)
+
+    def __floordiv__(self, other):
+        if self.opcode != tokens.BINARY_FLOOR_DIVIDE:
+            raise ValueError("Cannot floordiv in non-floordiv mode.")
+        return self.__append_args(other)
+
+
 class _PyteAugmentedValidator(object):
     """
-    An augmented validator ensures that the bytecode objects do not segfault when the bytecode is compiled and ran,
+    An augmented validator ensures that the bytecode objects do not segfault when the bytecode is 
+    compiled and ran,
     by validating the arguments.
     """
-
-    class _FakeMathematicalOP(_PyteOp):
-
-        def __init__(self, *args, opcode: int = None):
-            super().__init__(*args)
-            if opcode is None:
-                # what
-                raise ValidationError("This should never happen")
-            self.opcode = opcode
-
-        def to_bytes(self, previous: bytes):
-            bc = b""
-            # Add together all of the args.
-            for index, arg in enumerate(self.args):
-                # Validate the arg.
-                arg.validate()
-                # Get the LOAD_ call.
-                bc += arg.to_load()
-                # Add a BINARY_* depending on if we are the first argument, or any more arguments.
-                if index != 0:
-                    size = 1
-                    if PY36:
-                        # py36 change: binary operators are now 2 bytes wide
-                        size = 2
-                    bc += self.opcode.to_bytes(size, byteorder="little")
-            return bc
-
-        def __append_args(self, other):
-            if other.__class__.__name__ == "_PyteAugmentedValidator":
-                tmp_args = list(self.args)
-                tmp_args.append(other)
-                self.args = tuple(tmp_args)
-            else:
-                self.args = tuple(list(self.args) + list(other.args))
-            return self
-
-        def __add__(self, other):
-            if self.opcode != tokens.BINARY_ADD:
-                raise ValueError("Cannot add in non-add mode.")
-            return self.__append_args(other)
-
-        def __sub__(self, other):
-            if self.opcode != tokens.BINARY_SUBTRACT:
-                raise ValueError("Cannot subtract in non-sub mode.")
-            return self.__append_args(other)
-
-        def __mul__(self, other):
-            if self.opcode != tokens.BINARY_MULTIPLY:
-                raise ValueError("Cannot multiply in non-mul mode.")
-            return self.__append_args(other)
-
-        def __truediv__(self, other):
-            if self.opcode != tokens.BINARY_TRUE_DIVIDE:
-                raise ValueError("Cannot truediv in non-truediv mode.")
-            return self.__append_args(other)
-
-        def __floordiv__(self, other):
-            if self.opcode != tokens.BINARY_FLOOR_DIVIDE:
-                raise ValueError("Cannot floordiv in non-floordiv mode.")
-            return self.__append_args(other)
 
     def __init__(self, index, get_partial, name):
         self.index = index
@@ -168,43 +172,43 @@ class _PyteAugmentedValidator(object):
 
     # Magic methods for maths stuff
     def __add__(self, other):
-        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_ADD)
+        return _FakeMathematicalOP(self, other, opcode=tokens.BINARY_ADD)
 
     def __sub__(self, other):
-        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_SUBTRACT)
+        return _FakeMathematicalOP(self, other, opcode=tokens.BINARY_SUBTRACT)
 
     def __mul__(self, other):
-        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_MULTIPLY)
+        return _FakeMathematicalOP(self, other, opcode=tokens.BINARY_MULTIPLY)
 
     def __floordiv__(self, other):
-        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_FLOOR_DIVIDE)
+        return _FakeMathematicalOP(self, other, opcode=tokens.BINARY_FLOOR_DIVIDE)
 
     def __truediv__(self, other):
-        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_TRUE_DIVIDE)
+        return _FakeMathematicalOP(self, other, opcode=tokens.BINARY_TRUE_DIVIDE)
 
     def __mod__(self, other):
-        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_MODULO)
+        return _FakeMathematicalOP(self, other, opcode=tokens.BINARY_MODULO)
 
     # Bitwise
     def __and__(self, other):
-        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_AND)
+        return _FakeMathematicalOP(self, other, opcode=tokens.BINARY_AND)
 
     def __or__(self, other):
-        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_OR)
+        return _FakeMathematicalOP(self, other, opcode=tokens.BINARY_OR)
 
     def __lshift__(self, other):
-        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_LSHIFT)
+        return _FakeMathematicalOP(self, other, opcode=tokens.BINARY_LSHIFT)
 
     def __rshift__(self, other):
-        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_RSHIFT)
+        return _FakeMathematicalOP(self, other, opcode=tokens.BINARY_RSHIFT)
 
     def __xor__(self, other):
-        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_XOR)
+        return _FakeMathematicalOP(self, other, opcode=tokens.BINARY_XOR)
 
     # 3.5 matrix multiple
 
     def __matmul__(self, other):
-        return self._FakeMathematicalOP(self, other, opcode=tokens.BINARY_MATRIX_MULTIPLY)
+        return _FakeMathematicalOP(self, other, opcode=tokens.BINARY_MATRIX_MULTIPLY)
 
     # Standard comparison ops
 

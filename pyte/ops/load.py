@@ -1,9 +1,9 @@
 """
 Load ops
 """
-from pyte.exc import ValidationError
-from pyte.superclasses import _PyteOp, _PyteAugmentedValidator
 from pyte import tokens, util
+from pyte.exc import ValidationError
+from pyte.superclasses import _PyteAugmentedValidator, _PyteOp
 from pyte.util import PY36
 
 
@@ -19,7 +19,8 @@ class _LoadOPSuper(object):
             Inner class, returned by __call__
             """
 
-            def __init__(self, validator: object, __override_opcode: int=None, __override_list_restriction: str=None):
+            def __init__(self, validator: object, __override_opcode: int = None,
+                         __override_list_restriction: str = None):
                 super().__init__()
                 # Set validators.
                 self.validator = validator
@@ -47,7 +48,8 @@ class _LoadOPSuper(object):
                 elif isinstance(self.validator, int):
                     var = self.validator
                 else:
-                    raise ValidationError("Could not turn `{}` into bytecode.".format(self.validator))
+                    raise ValidationError("Could not turn `{}` into bytecode."
+                                          .format(self.validator))
                 # Convert var into bytestring
                 b_var = var.to_bytes(1, byteorder="little")
                 byte_string += b_var
@@ -93,7 +95,8 @@ class _AttrLoader(_PyteOp):
             try:
                 assert isinstance(attr, _PyteAugmentedValidator)
             except AssertionError:
-                raise ValidationError("LOAD_ATTR call was not a _PyteAugmentedValidator object") from None
+                raise ValidationError("LOAD_ATTR call was not a _PyteAugmentedValidator object") \
+                    from None
 
             # Generate a LOAD_ATTR call
             attr.validate()

@@ -3,26 +3,28 @@ Compiles python bytecode using `types.FunctionType`.
 """
 import contextlib
 import dis
-import io
-
-import sys
-import warnings
-
-from pyte import tokens
-from pyte import util
-from pyte.superclasses import _PyteOp, _PyteAugmentedComparator
-from pyte.exc import CompileError
 import inspect
+import io
+import sys
 import types
+import warnings
+from io import BytesIO
+from typing import Any, Tuple
 
-from pyte.util import PY36, ensure_instruction
+from pyte import tokens, util
+from pyte.exc import CompileError
+from pyte.superclasses import _PyteAugmentedComparator, _PyteOp
+from pyte.util import PY36
 
 
-def _compile_bc(code: list) -> bytes:
+def compile_bytecode(code: list) -> bytes:
     """
-    Compiles Pyte objects into a bytecode string.
+    Compiles Pyte objects into a bytecode list.
+
+    :param code: A list of objects to compile.
+    :return: The computed bytecode.
     """
-    bc = b""
+    bc = BytesIO()
     for i, op in enumerate(code):
         try:
             # Get the bytecode.
@@ -35,12 +37,12 @@ def _compile_bc(code: list) -> bytes:
             else:
                 raise CompileError("Could not compile code of type {}".format(type(op)))
             # Append it
-            bc += bc_op
+            bc.write(bc_op)
         except Exception as e:
             print("Fatal compiliation error on operator {i} ({op}).".format(i=i, op=op))
             raise e
 
-    return bc
+    return bc.getvalue()
 
 
 # TODO: Backport to <3.3
@@ -67,12 +69,14 @@ def _simulate_stack(code: list) -> int:
             try:
                 effect = dis.stack_effect(instruction.opcode, instruction.arg)
             except ValueError as e:
-                raise CompileError("Invalid opcode `{}` when compiling".format(instruction.opcode)) from e
+                raise CompileError("Invalid opcode `{}` when compiling"
+                                   .format(instruction.opcode)) from e
         else:
             try:
                 effect = dis.stack_effect(instruction.opcode)
             except ValueError as e:
-                raise CompileError("Invalid opcode `{}` when compiling".format(instruction.opcode)) from e
+                raise CompileError("Invalid opcode `{}` when compiling"
+                                   .format(instruction.opcode)) from e
         curr_stack += effect
         # Re-check the stack.
         _should_new_stack = _check_stack(instruction)
@@ -96,41 +100,22 @@ def _optimize_warn_pass(bc: list):
                 warnings.warn("STORE_FAST call followed by LOAD_FAST call has no effect")
 
 
-def compile(code: list, consts: list, names: list, varnames: list, func_name: str = "<unknown, compiled>",
-            arg_count=0, kwarg_defaults=(), use_safety_wrapper: bool = True):
+def compile(code: list, consts: list, names: list, varnames: list,
+            func_name: str = "<unknown, compiled>",
+            arg_count: int = 0, kwarg_defaults: Tuple[Any] = (), use_safety_wrapper: bool = True):
     """
-    Compiles a set of bytecode instructions into a working function, using Python's bytecode compiler.
+    Compiles a set of bytecode instructions into a working function, using Python's bytecode
+    compiler.
 
-    Parameters:
-        code: list
-            This represents a list of bytecode instructions.
-            These should be Pyte-validated objects, to prevent segfaults on running the code.
-
-        consts: list
-            A list of constants.
-            These constants can be any objects. They will not be validated.
-
-        names: list
-            A list of global names.
-            These will be used with LOAD_GLOBAL, and functions.
-
-        varnames: list
-            A list of `parameter arguments`.
-
-        func_name: str
-            The name of the function.
-
-        arg_count: int
-            The number of arguments to have. This must be less than or equal to the number of varnames.
-
-        kwarg_defaults: tuple
-            A tuple of defaults for keyword arguments.
-
-        use_safety_wrapper: bool
-            Use a safety wrapper?
-            This re-writes SystemError exceptions with an `invalid opcode` command to print a detailed bytecode
-            dissection of the bad function.
-
+    :param code: A list of bytecode instructions.
+    :param consts: A list of constants to compile into the function.
+    :param names: A list of names to compile into the function.
+    :param varnames: A list of ``varnames`` to compile into the function.
+    :param func_name: The name of the function to use.
+    :param arg_count: The number of arguments this function takes. Must be ``<= len(varnames)``.
+    :param kwarg_defaults: A tuple of defaults for kwargs.
+    :param use_safety_wrapper: Use the safety wrapper? This hijacks SystemError to print better \
+        stack traces.
     """
     varnames = tuple(varnames)
     consts = tuple(consts)
@@ -146,7 +131,7 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
         raise CompileError("len(kwarg_defaults) > len(varnames)")
 
     # Compile it.
-    bc = _compile_bc(code)
+    bc = compile_bytecode(code)
 
     dis.dis(bc)
 
@@ -157,8 +142,8 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
     else:
         if bc[-1] != tokens.RETURN_VALUE:
             raise CompileError(
-                "No default RETURN_VALUE. Add a `pyte.tokens.RETURN_VALUE` to the end of your bytecode if "
-                "you don't need one.")
+                "No default RETURN_VALUE. Add a `pyte.tokens.RETURN_VALUE` to the end of your "
+                "bytecode if you don't need one.")
 
     # Set default flags
     flags = 1 | 2 | 64
@@ -210,9 +195,9 @@ def compile(code: list, consts: list, names: list, varnames: list, func_name: st
                 if 'opcode' not in ' '.join(e.args):
                     # Re-raise any non opcode related errors.
                     raise
-                msg = "Bytecode exception!\nFunction {} returned an invalid opcode.\nFunction dissection:\n\n".format(
-                    f.__name__
-                )
+                msg = "Bytecode exception!" \
+                      "\nFunction {} returned an invalid opcode." \
+                      "\nFunction dissection:\n\n".format(f.__name__)
                 # dis sucks and always prints to stdout
                 # so we capture it
                 file = io.StringIO()

@@ -1,7 +1,13 @@
-import collections, dis, sys
+"""
+Backports for certain methods we need.
+"""
+
+import collections
+import dis
 
 _Instruction = collections.namedtuple("_Instruction",
-                                      "opname opcode arg argval argrepr offset starts_line is_jump_target")
+                                      "opname opcode arg argval argrepr offset starts_line "
+                                      "is_jump_target")
 
 
 class Instruction(_Instruction):
@@ -118,5 +124,8 @@ def _get_instructions_bytes(code, varnames=None, names=None, constants=None,
 
 
 def apply():
+    """
+    Applies backports to dis that we need.
+    """
     dis._get_instructions_bytes = _get_instructions_bytes
     dis.Instruction = Instruction

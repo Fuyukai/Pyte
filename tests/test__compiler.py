@@ -1,17 +1,14 @@
 """
 Test suite for Pyte.
 """
-import dis
 import struct
+import sys
 import types
 
 import pytest as pytest
-import sys
 
 import pyte
-from pyte import tokens
-
-from pyte import exc
+from pyte import exc, tokens
 from pyte.util import PY36
 
 

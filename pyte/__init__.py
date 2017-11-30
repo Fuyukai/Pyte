@@ -2,6 +2,7 @@
 Pyte package file, import some useful stuff from other functions.
 """
 import sys
+
 __version__ = "1.0.0"
 
 if sys.version_info[1] == 2:
