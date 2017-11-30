@@ -29,12 +29,27 @@ def _create_validated(*args, name) -> superclasses.PyteAugmentedArgList:
 
 
 def create_names(*args) -> superclasses.PyteAugmentedArgList:
+    """
+    Creates a new list of names.
+
+    :param args: The args to use.
+    """
     return _create_validated(*args, name="names")
 
 
 def create_consts(*args) -> superclasses.PyteAugmentedArgList:
+    """
+    Creates a new list of names.
+
+    :param args: The args to use.
+    """
     return _create_validated(*args, name="consts")
 
 
 def create_varnames(*args) -> superclasses.PyteAugmentedArgList:
+    """
+    Creates a new list of names.
+
+    :param args: The args to use.
+    """
     return _create_validated(*args, name="varnames")

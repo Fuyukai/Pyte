@@ -1,5 +1,6 @@
 import os
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
 
 rootpath = os.path.abspath(os.path.dirname(__file__))
 
@@ -22,8 +23,8 @@ setup(
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     url='https://github.com/SunDwarf/Pyte',
     license='MIT',
-    author='Isaac Dickinson',
-    author_email='sun@veriny.tf',
+    author='Laura Dickinson',
+    author_email='l@veriny.tf',
     description='Pyte bytecode compiler',
     tests_require=['pytest>=2.9.1', 'coveralls', 'pytest-cov>=2.2.1', 'coveralls>=1.1'],
 )
